@@ -10,13 +10,16 @@ from docopt import docopt
 # Local imports
 from translation_google import translate_text
 from spacy_utils import get_pronoun_on_sentence, get_nlp_en, get_sentence_gender, get_nsubj_sentence
+from generate_model_translation import generate_translation
+from gender_inflection import get_gender_inflections
 
 
 def get_source_sentence(source_sentence):
     print(source_sentence)
     if ' ' not in source_sentence.strip():
         has_gender = has_gender(source_sentence)
-        translate_text(source_sentence)
+        translation = generate_translation(source_sentence)
+        all_inflections = get_gender_inflections(source_sentence)
     else:
         source_sentence = get_nlp_en(source_sentence)
         pronoun_list = get_pronoun_on_sentence(source_sentence)
