@@ -43,3 +43,8 @@ def get_sentence_gender(sentence):
             gender_list.append(gender.pop())
 
     return gender_list
+
+
+def get_word_pos_and_morph(word):
+    for token in word:
+        return token.text, token.pos_, token.morph

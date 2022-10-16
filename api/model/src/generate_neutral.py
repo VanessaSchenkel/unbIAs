@@ -1,6 +1,17 @@
+"""Usage:
+    generate_neutral.py --sentence=SENTENCE [--debug]
+"""
+
+# External imports
+import logging
+from docopt import docopt
+from api.model.src.spacy_utils import get_pronoun_on_sentence
+
+from spacy_utils import get_nlp_pt
 
 
-def make_neutral(word):
+def make_neutral(sentence):
+    sentence = get_nlp_pt(sentence)
     new_sentence = ""
     for token in sentence:
         gender = token.morph.get("Gender")
@@ -15,3 +26,54 @@ def make_neutral(word):
             new_sentence += token.text_with_ws
 
     return new_sentence
+
+
+def make_neutral_with_pronoun(sentence):
+    sentence = get_nlp_pt(sentence)
+    new_sentence = ""
+    pronoun = get_pronoun_on_sentence(sentence)
+    nsubj = get_nsubj_sentence(sentence)
+
+    for index, token in enumerate(sentence):
+        gender = token.morph.get("Gender")
+
+        if token == nsubj and index > 0:
+            word_before = sentence[index-1]
+            if word_before.tag_ == 'DET':
+                new_word = "X"
+                new_sentence += new_word + " "
+                if index == 1:
+                    new_sentence = ""
+                    new_word = "X"
+                    new_sentence += new_word + " "
+
+        if len(gender) > 0 and token.text.lower() != "eu" and (token == nsubj or token in pronoun):
+            if token.text.endswith("o") or token.text.endswith("a"):
+                new_word = token.text[:-1] + "X"
+                new_sentence += new_word + " "
+
+            elif token.text.endswith("os") or token.text.endswith("as"):
+                new_word = token.text[:-1] + "Xs"
+                new_sentence += new_word + " "
+
+        else:
+            new_sentence += token.text_with_ws
+
+        return new_sentence
+
+
+if __name__ == "__main__":
+    # Parse command line arguments
+    args = docopt(__doc__)
+    sentence_fn = args["--sentence"]
+    debug = args["--debug"]
+
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    neutral = make_neutral(sentence_fn)
+    print(neutral)
+
+    logging.info("DONE")
