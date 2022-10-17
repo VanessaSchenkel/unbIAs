@@ -5,9 +5,9 @@
 # External imports
 import logging
 from docopt import docopt
-from api.model.src.spacy_utils import get_pronoun_on_sentence
 
-from spacy_utils import get_nlp_pt
+# Local imports
+from spacy_utils import get_nlp_pt, get_pronoun_on_sentence, get_only_subject_sentence
 
 
 def make_neutral(sentence):
@@ -32,7 +32,7 @@ def make_neutral_with_pronoun(sentence):
     sentence = get_nlp_pt(sentence)
     new_sentence = ""
     pronoun = get_pronoun_on_sentence(sentence)
-    nsubj = get_nsubj_sentence(sentence)
+    nsubj = get_only_subject_sentence(sentence)
 
     for index, token in enumerate(sentence):
         gender = token.morph.get("Gender")
@@ -59,7 +59,7 @@ def make_neutral_with_pronoun(sentence):
         else:
             new_sentence += token.text_with_ws
 
-        return new_sentence
+    return new_sentence
 
 
 if __name__ == "__main__":
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.INFO)
 
-    neutral = make_neutral(sentence_fn)
+    neutral = make_neutral_with_pronoun(sentence_fn)
     print(neutral)
 
     logging.info("DONE")

@@ -8,10 +8,11 @@ from docopt import docopt
 
 # Local imports
 from translation_google import translate_text
-from spacy_utils import get_pronoun_on_sentence, get_nlp_en, get_sentence_gender, get_nsubj_sentence, get_nlp_pt
-from generate_model_translation import generate_translation, get_constrained_translation_one_subject
-from gender_inflection import get_gender_inflections
+from spacy_utils import get_pronoun_on_sentence, get_nlp_en, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, get_noun_sentence
+from generate_model_translation import generate_translation, get_constrained_translation_one_subject, generate_translation_with_gender_constrained
+from gender_inflection import get_gender_inflections, format_sentence_inflections
 from constrained_beam_search import get_constrained_sentence
+from generate_neutral import make_neutral_with_pronoun
 
 
 def get_source_sentence(source_sentence):
@@ -21,12 +22,16 @@ def get_source_sentence(source_sentence):
         return all_inflections
     else:
         source_sentence = get_nlp_en(source_sentence)
-        has_one_gender = has_one_gender_and_one_subject(source_sentence)
+        subjects = get_nsubj_sentence(source_sentence)
+        pronoun_list = get_pronoun_on_sentence(source_sentence)
+        gender = get_sentence_gender(source_sentence)
 
-        if has_one_gender:
-            translation = generate_translation_for_one_subj(
+        if len(set(pronoun_list)) == 1 and len(set(subjects)) == 1:
+            return generate_translation_for_one_subj(
                 source_sentence.text_with_ws)
-            return translation
+
+        elif len(gender) == 0 and len(set(pronoun_list)) == 0:
+            return generate_translation_for_neutral(source_sentence)
 
 
 def generate_translation_for_one_subj(source_sentence):
@@ -36,14 +41,20 @@ def generate_translation_for_one_subj(source_sentence):
         translation_google, subject)
     more_likely, less_likely = get_constrained_translation_one_subject(
         source_sentence, constrained_sentence)
-    print(more_likely, less_likely)
+    neutral = make_neutral_with_pronoun(more_likely)
+    return {'more_likely': more_likely, 'less_likely': less_likely, 'neutral': neutral}
 
 
-def has_one_gender_and_one_subject(sentence):
-    subjects = get_nsubj_sentence(sentence)
-    pronoun_list = get_pronoun_on_sentence(sentence)
+def generate_translation_for_neutral(source_sentence):
+    translation = generate_translation(source_sentence.text)
+    translation = get_nlp_pt(translation.rstrip("."))
+    print(translation)
+    all_inflections = []
+    for word in translation:
+        all_inflections.append(get_gender_inflections(word.text.lower()))
 
-    return len(set(pronoun_list)) == 1 and len(set(subjects)) == 1
+    translations = format_sentence_inflections(all_inflections)
+    return translations
 
 
 if __name__ == "__main__":

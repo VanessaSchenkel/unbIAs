@@ -5,29 +5,55 @@
 # External imports
 import logging
 from docopt import docopt
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, DisjunctiveConstraint
 
 model_name = 'VanessaSchenkel/pt-unicamp-handcrafted'
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
 
-def generate_translation(source_sentence):
-    translation_model = get_best_translation(source_sentence)
+def generate_translation(source_sentence, num_return_sequences=1):
+    translation_model = get_best_translation(
+        source_sentence, num_return_sequences)
     return translation_model
 
 
-def get_best_translation(source_sentence: str):
+# def get_best_translation(source_sentence: str):
+#     source_sentence = source_sentence if source_sentence.endswith(
+#         '.') else source_sentence + "."
+
+#     input_ids = tokenizer(source_sentence, return_tensors="pt").input_ids
+
+#     outputs = model.generate(input_ids, num_beams=10, max_new_tokens=200)
+#     translation_model = tokenizer.batch_decode(
+#         outputs, skip_special_tokens=True)
+
+#     return translation_model[0]
+
+
+def get_best_translation(source_sentence: str, num_return_sequences=1):
     source_sentence = source_sentence if source_sentence.endswith(
         '.') else source_sentence + "."
 
     input_ids = tokenizer(source_sentence, return_tensors="pt").input_ids
 
-    outputs = model.generate(input_ids, num_beams=10, max_length=10)
-    translation_model = tokenizer.batch_decode(
-        outputs, skip_special_tokens=True)
+    outputs = model.generate(
+        input_ids,
+        num_beams=10,
+        num_return_sequences=num_return_sequences,
+        max_new_tokens=200
+    )
 
-    return translation_model[0]
+    if num_return_sequences == 1:
+        return tokenizer.batch_decode(outputs, skip_special_tokens=True)[0]
+
+    translation_model = []
+
+    for output in outputs:
+        translation_model.append(tokenizer.decode(
+            output, skip_special_tokens=True))
+
+    return translation_model
 
 
 def get_constrained_translation_one_subject(source_sentence, constrained_sentence):
@@ -53,6 +79,30 @@ def get_constrained_translation_one_subject(source_sentence, constrained_sentenc
     less_likely = tokenizer.decode(outputs[1], skip_special_tokens=True)
 
     return most_likely, less_likely
+
+
+def generate_translation_with_gender_constrained(source_sentence, constrained_gender):
+    source_sentence = source_sentence + \
+        '.' if not source_sentence.endswith('.') else source_sentence
+
+    input_ids = tokenizer(source_sentence, return_tensors="pt").input_ids
+
+    force_words_ids = tokenizer(
+        [constrained_gender], add_special_tokens=False).input_ids
+
+    print("CONSTRAINED", constrained_gender)
+
+    outputs = model.generate(
+        input_ids,
+        force_words_ids=force_words_ids,
+        num_beams=20,
+        num_return_sequences=1,
+        max_new_tokens=200
+    )
+
+    most_likely = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+    return most_likely
 
 
 if __name__ == "__main__":

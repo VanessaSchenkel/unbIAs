@@ -31,8 +31,32 @@ def get_nsubj_sentence(sentence):
     for token in sentence:
         if token.dep_ == 'nsubj':
             nsubj_list.append(token)
-    
-    return nsubj_list        
+
+    return nsubj_list
+
+
+def get_nsubj_sentence(sentence):
+    nsubj_list = []
+    for token in sentence:
+        if token.dep_ == 'nsubj':
+            nsubj_list.append(token)
+
+    return nsubj_list
+
+
+def get_noun_sentence(sentence):
+    noun_list = []
+    for token in sentence:
+        if token.tag_ == 'NOUN':
+            noun_list.append(token)
+
+    return noun_list
+
+
+def get_only_subject_sentence(sentence):
+    for token in sentence:
+        if token.dep_ == 'nsubj':
+            return token
 
 
 def get_sentence_gender(sentence):
