@@ -10,7 +10,7 @@ from docopt import docopt
 from translation_google import translate_text
 from spacy_utils import get_pronoun_on_sentence, get_nlp_en, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, get_noun_sentence
 from generate_model_translation import generate_translation, get_constrained_translation_one_subject, generate_translation_with_gender_constrained
-from gender_inflection import get_gender_inflections, format_sentence_inflections
+from gender_inflection import get_gender_inflections, get_just_possible_words, format_sentence_inflections
 from constrained_beam_search import get_constrained_sentence
 from generate_neutral import make_neutral_with_pronoun
 
@@ -47,14 +47,11 @@ def generate_translation_for_one_subj(source_sentence):
 
 def generate_translation_for_neutral(source_sentence):
     translation = generate_translation(source_sentence.text)
-    translation = get_nlp_pt(translation.rstrip("."))
-    print(translation)
-    all_inflections = []
-    for word in translation:
-        all_inflections.append(get_gender_inflections(word.text.lower()))
+    translation = get_nlp_pt(translation)
+    possible_words = get_just_possible_words(translation)
+    sentences = format_sentence_inflections(possible_words)
 
-    translations = format_sentence_inflections(all_inflections)
-    return translations
+    return sentences
 
 
 if __name__ == "__main__":

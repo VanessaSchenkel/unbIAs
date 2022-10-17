@@ -90,8 +90,6 @@ def generate_translation_with_gender_constrained(source_sentence, constrained_ge
     force_words_ids = tokenizer(
         [constrained_gender], add_special_tokens=False).input_ids
 
-    print("CONSTRAINED", constrained_gender)
-
     outputs = model.generate(
         input_ids,
         force_words_ids=force_words_ids,
