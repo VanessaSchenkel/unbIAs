@@ -39,7 +39,6 @@ def get_nsubj_sentence(sentence):
 def get_nsubj_sentence(sentence):
     nsubj_list = []
     for token in sentence:
-        print(token, token.dep_)
         if token.dep_ == 'nsubj':
             nsubj_list.append(token)
 
@@ -113,7 +112,6 @@ def split_sentences_by_nsubj(source_sentence, subj_list):
 
     for sub in subj_list:
         sentence = get_new_sentence_without_subj(sentence_complete, sentence_to_remove)
-        print(sentence)
         for token in sentence:
             if token.text == str(sub):
                 sentence_to_remove = get_subj_subtree(sentence, token.i)
@@ -131,5 +129,11 @@ def format_sentence(sentence):
             new_sentence += token.text_with_ws
 
     splitted = new_sentence.split("###")
-
     return splitted  
+
+def get_noun_chunks(sentence):
+    chunk_list = []
+    for chunk in sentence.noun_chunks:
+        chunk_list.append(chunk)
+
+    return chunk_list    

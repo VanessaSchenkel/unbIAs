@@ -105,10 +105,20 @@ def get_just_possible_words(translation):
         else:
             inflections = get_gender_inflections(word.text.lower())
             forms = []
-            forms.append(inflections['word'])
 
-            for inflection in inflections['forms']:
-                forms.append(inflection['form'])
+            if inflections == "No matches":   
+                forms.append(word.text)
+                forms.append(word.text)
+                forms.append(word.text)
+            else:    
+                forms.append(inflections['word'])
+
+                for inflection in inflections['forms']:
+                    forms.append(inflection['form'])
+                
+                if len(inflections['forms']) == 0: 
+                    forms.append(inflections['word'])
+                    forms.append(inflections['word'])
 
             forms_list.append(forms)
 

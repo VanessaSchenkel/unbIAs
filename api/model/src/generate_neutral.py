@@ -22,9 +22,15 @@ def make_neutral(sentence):
             elif token.text.endswith("os") or token.text.endswith("as"):
                 new_word = token.text[:-2] + "[X]s"
                 new_sentence += new_word
-            elif token.text == "um" or token.text == "uma":
+            elif token.text.lower() == "um" or token.text.lower() == "uma":
                 new_word = "um[X]"
                 new_sentence += new_word
+            elif token.text.lower() == "ele" or token.text.lower() == "ela":
+                new_word = "el[X]"
+                new_sentence += new_word 
+            elif token.text.lower() == "eles" or token.text.lower() == "elas":
+                new_word = "el[X]s"
+                new_sentence += new_word     
         else:
             new_sentence += token.text_with_ws
 
