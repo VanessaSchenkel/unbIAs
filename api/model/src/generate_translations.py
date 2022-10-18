@@ -3,13 +3,14 @@
 """
 
 # External imports
+import itertools
 import logging
 from docopt import docopt
 import more_itertools
 
 # Local imports
 from translation_google import translate_text
-from spacy_utils import get_pronoun_on_sentence, get_nlp_en, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, format_sentence, split_sentences_by_nsubj
+from spacy_utils import get_pronoun_on_sentence, get_nlp_en, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, has_gender_in_source, format_sentence, split_sentences_by_nsubj
 from generate_model_translation import generate_translation, get_constrained_translation_one_subject, get_best_translation, get_contrained_translation
 from gender_inflection import get_gender_inflections, get_just_possible_words, format_sentence_inflections
 from constrained_beam_search import get_constrained_sentence, get_format_translation
@@ -30,28 +31,32 @@ def get_source_sentence(source_sentence):
         pronoun_list = get_pronoun_on_sentence(source_sentence)
         gender = get_sentence_gender(source_sentence)
 
+        # print("subjects, prnoun, gender", subjects, pronoun_list, gender)
 
         if len(set(pronoun_list)) == 1 and len(set(subjects)) == 1:
-            return generate_translation_for_one_subj(
+            more_likely, less_likely, neutral = generate_translation_for_one_subj(
                 source_sentence.text_with_ws)
+            return {"more_likely": more_likely, "less_likely": less_likely, "neutral": neutral}    
 
         elif len(gender) == 0 and len(set(pronoun_list)) == 0:
             return generate_translation_for_neutral(source_sentence)
 
         elif len(subjects) == len(set(pronoun_list)) and len(subjects) > 1:
             return generate_translation_for_more_than_one_gender(source_sentence, subjects)
+        elif len(subjects) > len(pronoun_list):
+            return generate_translation_more_subjects(source_sentence, subjects)
 
 
 
 def generate_translation_for_one_subj(source_sentence):
-    translation_google = get_nlp_pt("O médico terminou seu trabalho")
+    translation_google =  get_google_translation(source_sentence) 
     subject = get_nsubj_sentence(translation_google)
     constrained_sentence = get_constrained_sentence(
         translation_google, subject)
     more_likely, less_likely = get_constrained_translation_one_subject(
         source_sentence, constrained_sentence)
     neutral = make_neutral_with_pronoun(more_likely)
-    return {'more_likely': more_likely, 'less_likely': less_likely, 'neutral': neutral}
+    return more_likely, less_likely, neutral
 
 
 def generate_translation_for_neutral(source_sentence):
@@ -74,15 +79,14 @@ def generate_translation_for_more_than_one_gender(source_sentence, subjects):
 
     translation = generate_contrained_translation(collapsed)
     format_translation = get_format_translation(translation)
-    print(format_translation)
 
-    return ""
+    return format_translation
 
 def get_google_translation(sentence):
     if "doctor" in sentence:
         return get_nlp_pt("O médico terminou seu trabalho")
     elif "nurse" in sentence:
-        return get_nlp_pt(", a enfermeira ainda estava de folga")
+        return get_nlp_pt("a enfermeira falou muito")
 
 def generate_contrained_translation(sentences_splitted):
     translation = ""
@@ -96,7 +100,43 @@ def generate_contrained_translation(sentences_splitted):
         translation_contrained = get_contrained_translation(sentence, constrained_sentence)
         translation += translation_contrained
     
-    return translation     
+    return translation   
+
+def generate_translation_more_subjects(source_sentence, subjects):
+    sentence = format_sentence(source_sentence)
+    splitted_list = []
+    for sent in sentence:
+        sent = get_nlp_en(sent)
+        splitted_list.append(split_sentences_by_nsubj(sent, subjects))
+    
+    collapsed = list(more_itertools.collapse(splitted_list))
+
+    translations = []
+    for sentence in collapsed:
+        has_gender = has_gender_in_source(sentence)
+        more_likely, less_likely, neutral =  generate_translation_for_one_subj(sentence)
+        if has_gender:
+            translations.append([more_likely])
+        else:
+            translations.append([more_likely, less_likely, neutral])
+
+    all_combinations = format_multiple_sentence(translations)
+    print(all_combinations)
+    return ""      
+
+def format_multiple_sentence(translations):
+    sentences_formatted = []
+
+    all_combinations = list(itertools.product(*translations))
+
+    for sentence in all_combinations:
+        sent_joined = " ".join(sentence)
+        formatted = get_format_translation(sent_joined, regex = r". ,")
+        sentences_formatted.append(formatted)
+
+    return sentences_formatted
+
+
 
 if __name__ == "__main__":
     # Parse command line arguments

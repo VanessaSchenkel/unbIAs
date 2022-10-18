@@ -13,8 +13,9 @@ def get_nlp_pt(sentence):
     return nlp(sentence)
 
 
-def has_gender_in_source(word):
-    return True
+def has_gender_in_source(sentence):
+    sentence_nlp = get_nlp_en(sentence)
+    return len(get_sentence_gender(sentence_nlp)) > 0
 
 
 def get_pronoun_on_sentence(sentence):
@@ -38,6 +39,7 @@ def get_nsubj_sentence(sentence):
 def get_nsubj_sentence(sentence):
     nsubj_list = []
     for token in sentence:
+        print(token, token.dep_)
         if token.dep_ == 'nsubj':
             nsubj_list.append(token)
 

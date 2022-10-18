@@ -10,9 +10,7 @@ def get_constrained_sentence(translation, nsub):
     return constrained_sentence
 
 
-def get_format_translation(translation):
-    regex = r".,"
-    subst = ","
+def get_format_translation(translation, regex = r".,", subst = ","):
 
     result = re.sub(regex, subst, translation, 0, re.MULTILINE)
 

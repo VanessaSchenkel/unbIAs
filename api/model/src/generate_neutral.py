@@ -39,7 +39,6 @@ def make_neutral_with_pronoun(sentence):
 
     for index, token in enumerate(sentence):
         gender = token.morph.get("Gender")
-
         if token == nsubj and index > 0:
             word_before = sentence[index-1]
             if word_before.tag_ == 'DET':
@@ -63,8 +62,10 @@ def make_neutral_with_pronoun(sentence):
                 new_word = token.text[:-1] + "m[X]"
                 new_sentence += new_word + " "
 
-        else:
-            new_sentence += token.text_with_ws
+        elif token.pos_ != "DET" and token.i != 1:
+                new_sentence += token.text_with_ws
+           
+           
 
     return new_sentence
 
