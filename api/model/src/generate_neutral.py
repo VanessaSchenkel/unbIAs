@@ -43,24 +43,24 @@ def make_neutral_with_pronoun(sentence):
         if token == nsubj and index > 0:
             word_before = sentence[index-1]
             if word_before.tag_ == 'DET':
-                new_word = "X"
+                new_word = "[X]"
                 new_sentence += new_word + " "
                 if index == 1:
                     new_sentence = ""
-                    new_word = "X"
+                    new_word = "[X]"
                     new_sentence += new_word + " "
 
         if len(gender) > 0 and token.text.lower() != "eu" and (token == nsubj or token in pronoun):
             if token.text.endswith("o") or token.text.endswith("a"):
-                new_word = token.text[:-1] + "X"
+                new_word = token.text[:-1] + "[X]"
                 new_sentence += new_word + " "
 
             elif token.text.endswith("os") or token.text.endswith("as"):
-                new_word = token.text[:-1] + "Xs"
+                new_word = token.text[:-1] + "[X]s"
                 new_sentence += new_word + " "
 
             elif token.text == "um" or token.text == "uma":
-                new_word = token.text[:-1] + "mX"
+                new_word = token.text[:-1] + "m[X]"
                 new_sentence += new_word + " "
 
         else:

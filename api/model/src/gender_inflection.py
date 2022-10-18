@@ -7,6 +7,7 @@ from docopt import docopt
 import ast
 import csv
 import itertools
+import re
 
 from generate_neutral import make_neutral
 from spacy_utils import get_nlp_pt, get_word_pos_and_morph
@@ -74,7 +75,6 @@ def get_matches(text, pos):
 
 
 def format_sentence_inflections(possible_words):
-    print(possible_words)
     combined = [j for i in zip(*possible_words) for j in i]
 
     joined = " ".join(combined)
@@ -84,12 +84,17 @@ def format_sentence_inflections(possible_words):
     second_sentence = splitted_by_dot[1].strip().capitalize() + "."
     third_sentence = splitted_by_dot[2].strip().capitalize() + "."
 
-    # TODO PLURAL
-    # TODO SPLIT BY ENTITIES
-    # all_combinations = list(itertools.product(*possible_words))
-    # print("ALL", all_combinations)
-
     return {'first_sentence': first_sentence, 'second_sentence': second_sentence, 'third_sentence': third_sentence}
+
+def get_split_sentences(sentence):
+    sentence = get_nlp_pt(sentence)
+    tokens_id = []
+
+    for token in sentence:
+        if token.tag_ == "CCONJ" or token.tag_ == "PUNCT":
+            tokens_id.append(token.i)
+
+    return tokens_id        
 
 
 def get_just_possible_words(translation):
@@ -99,7 +104,6 @@ def get_just_possible_words(translation):
             forms_list.append([word.text, word.text, word.text])
         else:
             inflections = get_gender_inflections(word.text.lower())
-            print(inflections)
             forms = []
             forms.append(inflections['word'])
 
