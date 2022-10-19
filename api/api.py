@@ -1,5 +1,5 @@
 import time
-from model.src.generate_translations import get_source_sentence
+from model.src.generate_translations import translate
 from flask import Flask, request
 
 app = Flask(__name__)
@@ -13,6 +13,10 @@ def get_current_time():
 def json_example():
     request_data = request.get_json()
     print(request_data)
-    get_source_sentence(request_data['source_sentence'] )
-    return {"translation": "OK"}
+    try:
+        translate(request_data['source_sentence'])
+        return {"translation": "OK"}
+    except:
+        return "An error occurred translating sentences :("    
+    
     

@@ -8,7 +8,7 @@ from docopt import docopt
 import more_itertools
 
 # Local imports
-from translation_google import translate_text
+from translation_google import get_google_translation
 from spacy_utils import get_pronoun_on_sentence, get_nlp_en, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, has_gender_in_source, get_noun_chunks
 from generate_model_translation import generate_translation, get_constrained_translation_one_subject, get_contrained_translation
 from gender_inflection import get_just_possible_words, format_sentence_inflections
@@ -99,8 +99,6 @@ def generate_translation_for_one_subj(source_sentence):
     except:
         return "An error occurred translating for one subject"
 
-    # Tratar erro
-    # Em caso de erro, google 
     # Tratar they com mais de um sub e roberta
     # Tratar entidades/nome como neutro
 
@@ -164,20 +162,7 @@ def generate_translation_for_more_than_one_gender(source_sentence, subjects):
         return format_translation
     except:
         return "An error occurred translating more than one gender on the sentence"    
-
-def get_google_translation(sentence):
-    #TODO b = b + '.' if not b.endswith('.') else b
-    #TODO add Eu em "I"
-    if "doctor" in sentence:
-        return get_nlp_pt("a médica terminou seu trabalho.")
-    elif "nurse" in sentence:
-        return get_nlp_pt("a enfermeira falou muito")
-    elif "they" in sentence:
-        return get_nlp_pt("eles são ótimos.")
-    elif "fit" in sentence:
-        return get_nlp_pt("O troféu não cabia na mala marrom porque era muito grande.")
-    elif "tired" in sentence:
-        return get_nlp_pt("Eu estou cansado e eu gosto de ler muito.")    
+  
 
 def generate_contrained_translation(sentences_splitted):
     try:
