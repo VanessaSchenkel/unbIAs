@@ -11,8 +11,8 @@ import more_itertools
 # Local imports
 from translation_google import translate_text
 from spacy_utils import get_pronoun_on_sentence, get_nlp_en, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, has_gender_in_source, format_sentence, split_sentences_by_nsubj, get_noun_chunks
-from generate_model_translation import generate_translation, get_constrained_translation_one_subject, get_best_translation, get_contrained_translation
-from gender_inflection import get_gender_inflections, get_just_possible_words, format_sentence_inflections
+from generate_model_translation import generate_translation, get_constrained_translation_one_subject, get_contrained_translation
+from gender_inflection import get_just_possible_words, format_sentence_inflections
 from constrained_beam_search import get_constrained_sentence, get_format_translation
 from generate_neutral import make_neutral_with_pronoun
 from roberta import get_disambiguate_pronoun
@@ -58,8 +58,10 @@ def generate_translation_for_one_subj(source_sentence):
         return generate_they_translation(translation_google)
     
     subject = get_nsubj_sentence(translation_google)
+    
     constrained_sentence = get_constrained_sentence(
         translation_google, subject)  
+
     more_likely, less_likely = get_constrained_translation_one_subject(
         source_sentence, constrained_sentence)
     neutral = make_neutral_with_pronoun(more_likely)
@@ -97,13 +99,15 @@ def get_google_translation(sentence):
     #TODO b = b + '.' if not b.endswith('.') else b
     #TODO add Eu em "I"
     if "doctor" in sentence:
-        return get_nlp_pt("O médico terminou seu trabalho")
+        return get_nlp_pt("a médica perfeita terminou seu trabalho.")
     elif "nurse" in sentence:
         return get_nlp_pt("a enfermeira falou muito")
     elif "they" in sentence:
         return get_nlp_pt("eles são ótimos.")
     elif "fit" in sentence:
         return get_nlp_pt("O troféu não cabia na mala marrom porque era muito grande.")
+    elif "tired" in sentence:
+        return get_nlp_pt("Eu estou cansado.")    
 
 def generate_contrained_translation(sentences_splitted):
     translation = ""

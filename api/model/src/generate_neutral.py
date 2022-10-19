@@ -14,6 +14,7 @@ def make_neutral(sentence):
     sentence = get_nlp_pt(sentence)
     new_sentence = ""
     for token in sentence:
+        print("----->", token)
         gender = token.morph.get("Gender")
         if len(gender) > 0 and token.text.lower() != "eu":
             if token.text.endswith("o") or token.text.endswith("a"):
@@ -55,7 +56,7 @@ def make_neutral_with_pronoun(sentence):
                     new_word = "[X]"
                     new_sentence += new_word + " "
 
-        if len(gender) > 0 and token.text.lower() != "eu" and (token == nsubj or token in pronoun):
+        if len(gender) > 0 and token.text.lower() != "eu" and (token == nsubj or token in pronoun or token.tag_ == 'ADJ'):
             if token.text.endswith("o") or token.text.endswith("a"):
                 new_word = token.text[:-1] + "[X]"
                 new_sentence += new_word + " "
@@ -68,10 +69,11 @@ def make_neutral_with_pronoun(sentence):
                 new_word = token.text[:-1] + "m[X]"
                 new_sentence += new_word + " "
 
-        elif token.pos_ != "DET" and token.i != 1:
+        elif  token.pos_ != "DET" and token.i != 1 or len(gender) == 0:
+              if token.tag_ == 'PUNCT':
+                new_sentence = new_sentence.strip() + token.text
+              else:  
                 new_sentence += token.text_with_ws
-           
-           
 
     return new_sentence
 

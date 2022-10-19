@@ -57,22 +57,22 @@ def get_best_translation(source_sentence: str, num_return_sequences=1):
 
 
 def get_constrained_translation_one_subject(source_sentence, constrained_sentence):
-    source_sentence = source_sentence + \
-        '.' if not source_sentence.endswith('.') else source_sentence
-    force_word = constrained_sentence.strip() + "."
-
+    source_sentence = source_sentence.strip() + "."
+    constrained_sentence = constrained_sentence
+  
     input_ids = tokenizer(source_sentence, return_tensors="pt").input_ids
 
     force_words_ids = [
-        tokenizer([force_word], add_special_tokens=False).input_ids,
+        tokenizer(constrained_sentence, add_special_tokens=False).input_ids,
     ]
 
     outputs = model.generate(
         input_ids,
         force_words_ids=force_words_ids,
-        num_beams=10,
+        num_beams=50,
         num_return_sequences=2,
-        max_new_tokens=200
+        no_repeat_ngram_size=5,
+        max_new_tokens=500
     )
 
     most_likely = tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -123,6 +123,8 @@ def get_contrained_translation(source, constrained_sentence):
     translation = tokenizer.decode(output[0], skip_special_tokens=True)
     
     return translation
+
+
 
 if __name__ == "__main__":
     # Parse command line arguments
