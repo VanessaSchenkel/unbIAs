@@ -6,8 +6,6 @@ import logging
 from docopt import docopt
 import ast
 import csv
-import itertools
-import re
 
 from generate_neutral import make_neutral
 from spacy_utils import get_nlp_pt, get_word_pos_and_morph
@@ -80,11 +78,11 @@ def format_sentence_inflections(possible_words):
     joined = " ".join(combined)
     splitted_by_dot = joined.split(".")
 
-    first_sentence = splitted_by_dot[0].strip().capitalize() + "."
-    second_sentence = splitted_by_dot[1].strip().capitalize() + "."
-    third_sentence = splitted_by_dot[2].strip().capitalize() + "."
+    first_option = splitted_by_dot[0].strip().capitalize() + "."
+    second_option = splitted_by_dot[1].strip().capitalize() + "."
+    neutral = splitted_by_dot[2].strip().capitalize() + "."
 
-    return {'first_sentence': first_sentence, 'second_sentence': second_sentence, 'third_sentence': third_sentence}
+    return first_option, second_option, neutral
 
 def get_split_sentences(sentence):
     sentence = get_nlp_pt(sentence)

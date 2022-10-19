@@ -1,16 +1,5 @@
-import re
+from spacy_utils import get_nlp_en
 
-# def get_constrained_sentence(translation, nsub):
-#     constrained_sentence = ""
-#     children = [child for child in nsub[0].children]
-#     print("nsub", nsub)
-#     print("children", children)
-
-#     for token in translation:
-#         if token not in nsub and token not in children:
-#             constrained_sentence += token.text_with_ws
-
-#     return constrained_sentence
 
 def get_constrained_sentence(translation, nsub):  
   constrained_sentences = []
@@ -19,11 +8,6 @@ def get_constrained_sentence(translation, nsub):
   new_sentence = ""
   
   for token in translation:
-    # print("===", token, token.tag_)    
-    # if token.is_sent_start and token.text.lower() == "eu":
-    #   print("primeiro if", token, token.tag_)  
-    #   new_sentence += token.text_with_ws
-
     if token != nsub[0] and token not in children and token.tag_ != 'ADJ':
       new_sentence += token.text_with_ws
     
@@ -37,7 +21,53 @@ def get_constrained_sentence(translation, nsub):
 
   return constrained_sentences[0]
 
-def get_format_translation(translation, regex = r".,", subst = ","):
-    result = re.sub(regex, subst, translation, 0, re.MULTILINE)
+def get_new_sentence_without_subj(sentence_complete, sentence_to_remove):
+    if len(sentence_to_remove) > 0:
+        new_sentence = sentence_complete.text.split(sentence_to_remove)[-1]
 
-    return result    
+    else:
+        new_sentence = sentence_complete.text
+
+    return get_nlp_en(new_sentence)
+
+def get_subj_subtree(source_sentence, index):
+    sentence = ""
+  
+    for subtree in source_sentence[index].head.subtree:
+        sentence += subtree.text_with_ws
+
+    return sentence  
+
+
+def split_sentences_by_nsubj(source_sentence, subj_list):
+    splitted = []
+    sentence_complete = source_sentence
+    sentence_to_remove = ""
+    # is_all_the_same = is_all_same_pronoun(source_sentence)
+
+    # print(is_all_the_same, "is_all_the_same")
+    # if is_all_the_same:
+    #     return [source_sentence.text_with_ws]
+
+    for sub in subj_list:
+        sentence = get_new_sentence_without_subj(sentence_complete, sentence_to_remove)
+        for token in sentence:
+            if token.text == str(sub):
+                sentence_to_remove = get_subj_subtree(sentence, token.i)
+                splitted.append(sentence_to_remove)
+
+    return splitted  
+
+def split_sentence_same_subj(sentence):
+    new_sentence = ""
+
+    for token in sentence:
+        if "CCONJ" == token.pos_ or ("PUNCT" == token.pos_ and token.text != "."):          
+            new_sentence = new_sentence.strip() + "###" + token.text_with_ws
+        else:
+            new_sentence += token.text_with_ws
+
+    splitted = new_sentence.split("###")
+    return splitted  
+
+

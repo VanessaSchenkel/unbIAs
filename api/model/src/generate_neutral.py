@@ -39,7 +39,7 @@ def make_neutral(sentence):
 
 def make_neutral_with_constrained(sentence, constrained):
     new_sentence = ""
-    sentence_without_constrained = sentence.replace(constrained, "####")
+    sentence_without_constrained = sentence.replace(constrained, " #### ")
     sentence_to_be_neutral = get_nlp_pt(sentence_without_constrained)
     
     for token in sentence_to_be_neutral:
@@ -63,7 +63,7 @@ def make_neutral_with_constrained(sentence, constrained):
         else:
              new_sentence += token.text_with_ws
 
-    replaced = new_sentence.replace("###", constrained)
+    replaced = new_sentence.replace(" ### ", constrained)
     
     return replaced
 

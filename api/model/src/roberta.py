@@ -1,7 +1,6 @@
 import torch
 
 
-
 def get_disambiguate_pronoun(sentence, pronoun):
     roberta = torch.hub.load('pytorch/fairseq', 'roberta.large.wsc', user_dir='examples/roberta/wsc')
     pronoun_text_formatted = " [" + pronoun + "] "
