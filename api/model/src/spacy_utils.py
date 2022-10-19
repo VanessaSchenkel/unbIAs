@@ -64,7 +64,9 @@ def get_sentence_gender(sentence):
     gender_list = []
     for token in sentence:
         gender = token.morph.get("Gender")
-        if len(gender) > 0:
+
+        #spacy says eu is masculine
+        if len(gender) > 0 and token.text.lower() != "eu":
             gender_list.append(gender.pop())
 
     return gender_list
@@ -130,6 +132,19 @@ def format_sentence(sentence):
 
     splitted = new_sentence.split("###")
     return splitted  
+
+def split_sentence_same_subj(sentence):
+    new_sentence = ""
+
+    for token in sentence:
+        if "CCONJ" == token.pos_ or ("PUNCT" == token.pos_ and token.text != "."):          
+            new_sentence = new_sentence.strip() + "###" + token.text_with_ws
+        else:
+            new_sentence += token.text_with_ws
+
+    splitted = new_sentence.split("###")
+    return splitted  
+
 
 def get_noun_chunks(sentence):
     chunk_list = []

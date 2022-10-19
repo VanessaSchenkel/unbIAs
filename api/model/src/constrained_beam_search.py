@@ -19,8 +19,10 @@ def get_constrained_sentence(translation, nsub):
   new_sentence = ""
   
   for token in translation:
-    if token.is_sent_start and token.text.lower() == "eu":
-      new_sentence += token.text_with_ws
+    # print("===", token, token.tag_)    
+    # if token.is_sent_start and token.text.lower() == "eu":
+    #   print("primeiro if", token, token.tag_)  
+    #   new_sentence += token.text_with_ws
 
     if token != nsub[0] and token not in children and token.tag_ != 'ADJ':
       new_sentence += token.text_with_ws

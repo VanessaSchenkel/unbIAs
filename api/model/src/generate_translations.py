@@ -10,7 +10,7 @@ import more_itertools
 
 # Local imports
 from translation_google import translate_text
-from spacy_utils import get_pronoun_on_sentence, get_nlp_en, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, has_gender_in_source, format_sentence, split_sentences_by_nsubj, get_noun_chunks
+from spacy_utils import get_pronoun_on_sentence, get_nlp_en, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, has_gender_in_source, format_sentence, split_sentences_by_nsubj, get_noun_chunks, split_sentence_same_subj
 from generate_model_translation import generate_translation, get_constrained_translation_one_subject, get_contrained_translation
 from gender_inflection import get_just_possible_words, format_sentence_inflections
 from constrained_beam_search import get_constrained_sentence, get_format_translation
@@ -31,16 +31,21 @@ def get_source_sentence(source_sentence):
         pronoun_list = get_pronoun_on_sentence(source_sentence)
         gender = get_sentence_gender(source_sentence)
         
-        # print("subjects, prnoun, gender", subjects, pronoun_list, gender)
+        print("subjects, pronoun, gender", subjects, pronoun_list, gender)
+
+        is_all_same_pronoun = is_all_equal(pronoun_list)
+        is_all_same_subject = is_all_equal(subjects)
+
+        print(is_all_same_pronoun, is_all_same_subject)
         
-        if len(set(pronoun_list)) == 1 and len(set(subjects)) == 1:
+        if is_all_same_pronoun and is_all_same_subject:
              return generate_translation_for_one_subj(
                 source_sentence.text_with_ws)    
 
         elif len(gender) == 0 and len(set(pronoun_list)) == 0:
             return generate_translation_for_neutral(source_sentence)
 
-        elif len(subjects) == len(set(pronoun_list)) and len(subjects) > 1:
+        elif len(subjects) == len(set(pronoun_list)) and not is_all_same_subject:
             return generate_translation_for_more_than_one_gender(source_sentence, subjects)
         
         elif len(set(pronoun_list)) == 1 and all("it" == elem.text for elem in pronoun_list):
@@ -49,7 +54,8 @@ def get_source_sentence(source_sentence):
         elif len(subjects) > len(pronoun_list):
             return generate_translation_more_subjects(source_sentence, subjects)
 
-
+def is_all_equal(list):
+    return all(i.text == list[0].text for i in list)
 
 def generate_translation_for_one_subj(source_sentence):
     translation_google =  get_google_translation(source_sentence) 
@@ -59,13 +65,40 @@ def generate_translation_for_one_subj(source_sentence):
     
     subject = get_nsubj_sentence(translation_google)
     
-    constrained_sentence = get_constrained_sentence(
-        translation_google, subject)  
+    splitted_google_trans = split_sentence_same_subj(translation_google)
+    source = get_nlp_en(source_sentence)
+    splitted_source = split_sentence_same_subj(source)
 
-    more_likely, less_likely = get_constrained_translation_one_subject(
-        source_sentence, constrained_sentence)
-    neutral = make_neutral_with_pronoun(more_likely)
-    return {"more_likely": more_likely, "less_likely": less_likely, "neutral": neutral}
+    possible_sentences = []
+    for index, sentence in enumerate(splitted_google_trans):
+        sentence_translated = get_nlp_pt(sentence)
+        gender = get_sentence_gender(sentence_translated)
+
+        if len(gender) > 0:
+            constrained_sentence = get_constrained_sentence(sentence_translated, subject)  
+            more_likely, less_likely = get_constrained_translation_one_subject(splitted_source[index], constrained_sentence)
+            neutral = make_neutral_with_pronoun(more_likely)
+            possible_sentences.append([more_likely, less_likely, neutral])
+        else:
+            possible_sentences.append(sentence)
+
+    print(possible_sentences)            
+
+
+    # TODO combinar sentences
+    # Tratar erro
+    # Em caso de erro, google 
+    # Tratar they com mais de um sub e roberta
+
+
+    # constrained_sentence = get_constrained_sentence(
+    #         translation_google, subject)  
+
+    # more_likely, less_likely = get_constrained_translation_one_subject(
+    #         source_sentence, constrained_sentence)
+    # neutral = make_neutral_with_pronoun(more_likely)
+    # return {"more_likely": more_likely, "less_likely": less_likely, "neutral": neutral}  
+    return ""  
 
 def generate_they_translation(translation):
     possible_words = get_just_possible_words(translation)
@@ -107,7 +140,7 @@ def get_google_translation(sentence):
     elif "fit" in sentence:
         return get_nlp_pt("O troféu não cabia na mala marrom porque era muito grande.")
     elif "tired" in sentence:
-        return get_nlp_pt("Eu estou cansado.")    
+        return get_nlp_pt("Eu estou cansado e eu gosto de ler muito.")    
 
 def generate_contrained_translation(sentences_splitted):
     translation = ""
