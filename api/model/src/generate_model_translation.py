@@ -58,7 +58,6 @@ def get_best_translation(source_sentence: str, num_return_sequences=1):
 
 def get_constrained_translation_one_subject(source_sentence, constrained_sentence):
     source_sentence = source_sentence.strip() + "."
-    constrained_sentence = constrained_sentence
   
     input_ids = tokenizer(source_sentence, return_tensors="pt").input_ids
 
@@ -77,6 +76,8 @@ def get_constrained_translation_one_subject(source_sentence, constrained_sentenc
 
     most_likely = tokenizer.decode(outputs[0], skip_special_tokens=True)
     less_likely = tokenizer.decode(outputs[1], skip_special_tokens=True)
+
+    print("most_likely", most_likely, "less_likely", less_likely)
 
     return most_likely, less_likely
 

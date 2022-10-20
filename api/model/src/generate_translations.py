@@ -8,11 +8,11 @@ from docopt import docopt
 import more_itertools
 
 # Local imports
-from translation_google import get_google_translation
+# from translation_google import get_google_translation
 from spacy_utils import get_pronoun_on_sentence, get_nlp_en, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, has_gender_in_source, get_noun_chunks
-from generate_model_translation import generate_translation, get_constrained_translation_one_subject, get_contrained_translation
+from generate_model_translation import get_best_translation, generate_translation, get_constrained_translation_one_subject, get_contrained_translation
 from gender_inflection import get_just_possible_words, format_sentence_inflections
-from constrained_beam_search import get_constrained_sentence, split_sentences_by_nsubj, split_sentence_same_subj
+from constrained_beam_search import get_constrained_sentence, split_sentences_by_nsubj, split_sentence_same_subj, get_constrained
 from generate_neutral import make_neutral_with_pronoun, make_neutral_with_constrained
 from roberta import get_disambiguate_pronoun
 from format_translations import format_sentence, get_format_translation, format_multiple_sentence
@@ -26,14 +26,17 @@ def translate(source_sentence):
     pronoun_list = get_pronoun_on_sentence(source_sentence)
     gender = get_sentence_gender(source_sentence)
         
-    # print("subjects, pronoun, gender", subjects, pronoun_list, gender)
+    print("subjects, pronoun, gender", subjects, pronoun_list, gender)
+
+    for token in source_sentence:
+        print("---->", token, token.pos_, token.morph, token.ent_type_)
 
     is_all_same_pronoun = is_all_equal(pronoun_list)
     is_all_same_subject = is_all_equal(subjects)
         
     if is_all_same_pronoun and is_all_same_subject:
         first_sentence, second_sentence, third_sentence =  generate_translation_for_one_subj(source_sentence.text_with_ws)
-        
+       
         if is_neutral(pronoun_list):
             return {"first_option": first_sentence, "second_option": second_sentence, "neutral": third_sentence}
         
@@ -72,6 +75,8 @@ def get_translation_for_one_word(source_sentence):
     except:
         return "An error occurred translating one word"
 
+def get_google_translation(source_sentence):
+    return get_nlp_pt("Ela é uma boa médica.")
 
 def generate_translation_for_one_subj(source_sentence):
     try:
@@ -85,17 +90,28 @@ def generate_translation_for_one_subj(source_sentence):
         splitted_google_trans = split_sentence_same_subj(translation_google)
         source = get_nlp_en(source_sentence)
         splitted_source = split_sentence_same_subj(source)
+        constrained_sentence = get_constrained(source_sentence)     
 
-        if len(splitted_google_trans) == 1:
-            constrained_sentence = get_constrained_sentence(translation_google, subject)  
 
+        if len(constrained_sentence) == 0:
+
+            best_translation = get_best_translation(source_sentence)
+            neutral = make_neutral_with_pronoun(best_translation)
+
+            print("BEST", best_translation)
+            print("NEUTRAL", neutral)
+
+
+            return best_translation, best_translation, neutral
+        
+        elif len(splitted_google_trans) == 1:
             more_likely, less_likely = get_constrained_translation_one_subject(
                 source_sentence, constrained_sentence)
             neutral = make_neutral_with_constrained(more_likely, constrained_sentence)
             
             return more_likely, less_likely, neutral
-
-        return generate_multiple_sentence_translation(splitted_google_trans, subject, splitted_source);
+        else:
+            return generate_multiple_sentence_translation(splitted_google_trans, subject, splitted_source);
     except:
         return "An error occurred translating for one subject"
 

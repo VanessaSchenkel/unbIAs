@@ -1,25 +1,52 @@
-from spacy_utils import get_nlp_en
-
+from gender_inflection import get_just_possible_words
+from generate_model_translation import generate_translation
+from translation_google import get_google_translation
+from roberta import get_disambiguate_pronoun
+from spacy_utils import get_nlp_en, get_nsubj_sentence, get_pronoun_on_sentence, get_nlp_pt
 
 def get_constrained_sentence(translation, nsub):  
   constrained_sentences = []
 
   children = [child for child in nsub[0].children]
   new_sentence = ""
+  pronoun = get_nsubj_sentence(translation)
+  print("PRONOUN", pronoun)
   
   for token in translation:
-    if token != nsub[0] and token not in children and token.tag_ != 'ADJ':
+    print("====", token, token.pos_, token.morph, token.dep_, children, token.head)
+    
+    if token != nsub[0] and token not in children and token.pos_ != 'ADJ':
       new_sentence += token.text_with_ws
     
-    if (token.tag_ == 'ADJ' or token.is_sent_end) and len(new_sentence) > 0:
+    if (token.pos_ == 'ADJ' or token.is_sent_end) and len(new_sentence) > 0:
         lefts = [t for t in token.lefts]
-        if len(lefts) > 0 and lefts[0].tag_ == 'DET':
+        print("---", lefts)
+        
+        if len(lefts) > 0 and lefts[0].pos_ == 'DET':
             new_sentence = ""
         else:
+            print("new_sentence", new_sentence)
             constrained_sentences.append(new_sentence.strip())
             new_sentence = ""
 
   return constrained_sentences[0]
+
+def get_constrained(source_sentence):
+    source_nlp = get_nlp_en(source_sentence)
+    pronoun = get_pronoun_on_sentence(source_nlp)
+    subj = get_disambiguate_pronoun(source_nlp, pronoun[0].text)
+    masculine_translation, feminine_translation = generate_translation_for_roberta_nsubj(subj)
+    translation = get_google_translation(source_sentence)
+    translation_nlp = get_nlp_pt(translation)
+    constrained_sentence = ""
+
+    for token in translation_nlp:
+        head = str(token.head.text)
+        if head not in masculine_translation and head not in feminine_translation and token.text not in masculine_translation and token.text not in feminine_translation:
+            constrained_sentence += token.text_with_ws
+    
+    return constrained_sentence
+
 
 def get_new_sentence_without_subj(sentence_complete, sentence_to_remove):
     if len(sentence_to_remove) > 0:
@@ -71,3 +98,14 @@ def split_sentence_same_subj(sentence):
     return splitted  
 
 
+def generate_translation_for_roberta_nsubj(subject):
+    translation = generate_translation(subject)
+    translation = get_nlp_pt(translation)
+    possible_words = get_just_possible_words(translation)
+    
+    combined = [j for i in zip(*possible_words) for j in i]
+
+    joined = " ".join(combined)
+    splitted_by_dot = joined.split(".")
+
+    return splitted_by_dot[0].strip(), splitted_by_dot[1].strip()
