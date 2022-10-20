@@ -2,6 +2,7 @@
     gender_inflection.py --word=WORD [--debug]
 """
 # External imports
+import itertools
 import logging
 from docopt import docopt
 import ast
@@ -26,7 +27,7 @@ def get_gender_inflections(word: str):
         text = text.rstrip("s")
 
     matches = get_matches(text, pos)
-
+    
     if matches is None:
         return "No matches"
 
@@ -43,13 +44,14 @@ def get_gender_inflections(word: str):
             elif not should_get_plural and 'plural' not in form['tags']:
                 forms_matched.append(form)
 
-    if gender == 'fem' and len(forms_matched) == 0 and text != matches['word']:
-        forms_matched.append(matches['word'])
+    if "fem" in gender and len(forms_matched) == 0 and text != matches['word']:
+        form_obj = {'form': matches['word']}
+        forms_matched.append(form_obj)
 
     if len(forms_matched) > 0:
         neutral = make_neutral(gender_inflections['word'])
         new_obj = {}
-        new_obj['form'] = neutral
+        new_obj['form'] = neutral.strip()
         new_obj['tags'] = ['neutral']
         forms_matched.append(new_obj)
 
@@ -103,7 +105,7 @@ def get_just_possible_words(translation):
         else:
             inflections = get_gender_inflections(word.text.lower())
             forms = []
-
+            # print(inflections, "inflections")
             if inflections == "No matches":   
                 forms.append(word.text)
                 forms.append(word.text)
@@ -119,7 +121,7 @@ def get_just_possible_words(translation):
                     forms.append(inflections['word'])
 
             forms_list.append(forms)
-
+    
     return forms_list
 
 

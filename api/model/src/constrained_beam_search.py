@@ -10,26 +10,34 @@ def get_constrained_sentence(translation, nsub):
   children = [child for child in nsub[0].children]
   new_sentence = ""
   pronoun = get_nsubj_sentence(translation)
-  print("PRONOUN", pronoun)
   
   for token in translation:
-    print("====", token, token.pos_, token.morph, token.dep_, children, token.head)
+    # print("====", token, token.pos_, token.morph, token.dep_, children, token.head)
     
     if token != nsub[0] and token not in children and token.pos_ != 'ADJ':
       new_sentence += token.text_with_ws
     
     if (token.pos_ == 'ADJ' or token.is_sent_end) and len(new_sentence) > 0:
         lefts = [t for t in token.lefts]
-        print("---", lefts)
         
         if len(lefts) > 0 and lefts[0].pos_ == 'DET':
             new_sentence = ""
         else:
-            print("new_sentence", new_sentence)
             constrained_sentences.append(new_sentence.strip())
             new_sentence = ""
 
   return constrained_sentences[0]
+
+def get_constrained_gender(translation):
+    head = ""
+    word = ""
+    for token in translation:
+        if token.pos_ == "PRON" and token.dep_ == "nsubj":
+            head = str(token.head.text)
+        elif token.text == head and token.dep_ == "ROOT":
+            word = token.text
+    
+    return word        
 
 def get_constrained(source_sentence):
     source_nlp = get_nlp_en(source_sentence)
@@ -102,7 +110,7 @@ def generate_translation_for_roberta_nsubj(subject):
     translation = generate_translation(subject)
     translation = get_nlp_pt(translation)
     possible_words = get_just_possible_words(translation)
-    
+
     combined = [j for i in zip(*possible_words) for j in i]
 
     joined = " ".join(combined)

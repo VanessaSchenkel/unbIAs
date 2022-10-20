@@ -15,24 +15,34 @@ def make_neutral(sentence):
     new_sentence = ""
     for token in sentence:
         gender = token.morph.get("Gender")
+        print(token, gender, token.morph, token.pos_)
+        
         if len(gender) > 0 and token.text.lower() != "eu":
             if token.text.endswith("o") or token.text.endswith("a"):
-                new_word = token.text[:-1] + "[X]"
+                new_word = token.text[:-1] + "[x]"
                 new_sentence += new_word + " "
             elif token.text.endswith("os") or token.text.endswith("as"):
-                new_word = token.text[:-2] + "[X]s"
+                new_word = token.text[:-2] + "[x]s"
                 new_sentence += new_word + " "
             elif token.text.lower() == "um" or token.text.lower() == "uma":
-                new_word = "um[X]"
+                new_word = "um[x]"
                 new_sentence += new_word + " "
             elif token.text.lower() == "ele" or token.text.lower() == "ela":
-                new_word = "el[X]"
+                new_word = "el[x]"
                 new_sentence += new_word + " "
             elif token.text.lower() == "eles" or token.text.lower() == "elas":
-                new_word = "el[X]s"
-                new_sentence += new_word + " " 
+                new_word = "el[x]s"
+                new_sentence += new_word
+            elif token.tag_ == 'DET' and token.text.lower() == "a" or token.text.lower() == "o":
+                new_word = "[x]"
+                new_sentence += new_word + " "     
+            else:
+                new_sentence += token.text_with_ws
         else:
-            new_sentence += token.text_with_ws
+            if token.tag_ == 'PUNCT' or token.is_sent_end:
+                new_sentence = new_sentence.strip() + token.text
+            else:  
+                new_sentence += token.text_with_ws
 
     return new_sentence
 
@@ -46,19 +56,19 @@ def make_neutral_with_constrained(sentence, constrained = ""):
         gender = token.morph.get("Gender")
         if len(gender) > 0:
             if token.text.endswith("o") or token.text.endswith("a"):
-                new_word = token.text[:-1] + "[X]"
+                new_word = token.text[:-1] + "[x]"
                 new_sentence += new_word + " "
 
             elif token.text.endswith("os") or token.text.endswith("as"):
-                new_word = token.text[:-1] + "[X]s"
+                new_word = token.text[:-1] + "[x]s"
                 new_sentence += new_word + " "
 
             elif token.text.lower() == "um" or token.text.lower() == "uma":
-                new_word = "um[X]"
+                new_word = "um[x]"
                 new_sentence += new_word + " "
             
             elif token.tag_ == 'DET' and token.text.lower() == "a" or token.text.lower() == "o":
-                new_word = "[X]"
+                new_word = "[x]"
                 new_sentence += new_word + " " 
         else:
              new_sentence += token.text_with_ws
@@ -78,28 +88,28 @@ def make_neutral_with_pronoun(sentence):
         if token == nsubj and index > 0:
             word_before = sentence[index-1]
             if word_before.tag_ == 'DET':
-                new_word = "[X]"
+                new_word = "[x]"
                 new_sentence += new_word + " "
                 if index == 1:
                     new_sentence = ""
-                    new_word = "[X]"
+                    new_word = "[x]"
                     new_sentence += new_word + " "
 
         if len(gender) > 0 and token.text.lower() != "eu" and (token == nsubj or token in pronoun or token.tag_ == 'ADJ'):
             if token.text.endswith("o") or token.text.endswith("a"):
-                new_word = token.text[:-1] + "[X]"
+                new_word = token.text[:-1] + "[x]"
                 new_sentence += new_word + " "
 
             elif token.text.endswith("os") or token.text.endswith("as"):
-                new_word = token.text[:-1] + "[X]s"
+                new_word = token.text[:-1] + "[x]s"
                 new_sentence += new_word + " "
 
             elif token.text == "um" or token.text == "uma":
-                new_word = token.text[:-1] + "m[X]"
+                new_word = token.text[:-1] + "m[x]"
                 new_sentence += new_word + " "
 
         elif  token.pos_ != "DET" and token.i != 1 or len(gender) == 0:
-              if token.tag_ == 'PUNCT':
+              if token.tag_ == 'PUNCT' or token.is_sent_end:
                 new_sentence = new_sentence.strip() + token.text
               else:  
                 new_sentence += token.text_with_ws

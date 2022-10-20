@@ -1,7 +1,7 @@
 import itertools
 import re
 
-from spacy_utils import get_nlp_pt
+from spacy_utils import get_nlp_pt, get_nlp_en
 
 def format_sentence(sentence):
     new_sentence = ""
@@ -30,7 +30,10 @@ def format_with_dot(translation):
             else:
                 new_sentence += " "
         else:
-            new_sentence += token.text_with_ws
+            if token.ent_type_ == "PERSON" or token.is_sent_start:
+                new_sentence += token.text_with_ws
+            else:
+                 new_sentence += token.text_with_ws.lower()
 
     return new_sentence          
 
@@ -45,4 +48,8 @@ def format_multiple_sentence(translations):
         sentences_formatted.append(formatted)
 
     return sentences_formatted
-            
+
+def should_remove_first_word(sentence):
+    sent = get_nlp_en(sentence)
+    for token in sent:
+        return (token.pos_ == "CCONJ" or token.is_punct) and token.i == 0

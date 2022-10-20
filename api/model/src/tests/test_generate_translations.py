@@ -5,13 +5,13 @@ def test_translate_one_word():
     sentence = "Cat."
     possible_words = translate(sentence)
 
-    assert possible_words['possible_words'] == ['gato', 'gata', 'gat[X]']
+    assert possible_words['possible_words'] == ['Gato', 'Gata', 'Gat[x]']
 
 def test_translate_one_word_plural():
     sentence = "Cats."
     possible_words = translate(sentence)
 
-    assert possible_words['possible_words'] == ['gatos', 'gatas', 'gat[X]s']
+    assert possible_words['possible_words'] == ['Gatos', 'Gatas', 'Gat[x]s']
 
 def test_translate_one_sub():
     sentence = "The doctor finished her work."
@@ -19,7 +19,7 @@ def test_translate_one_sub():
 
     assert translation['more_likely'] == 'A médica terminou seu trabalho.'
     assert translation['less_likely'] == 'O médico terminou seu trabalho.'
-    assert translation['neutral'] == '[X] médic[X] terminou seu trabalho.'
+    assert translation['neutral'] == '[x] médic[x] terminou seu trabalho.'
 
 def test_translate_one_sub_neutral():
     sentence = "The nurse talked a lot"
@@ -27,7 +27,7 @@ def test_translate_one_sub_neutral():
  
     assert translation['first_option'] == 'A enfermeira falou muito.'
     assert translation['second_option'] == 'O enfermeiro falou muito.'
-    assert translation['neutral'] == '[X] enfermeir[X] falou muito.'
+    assert translation['neutral'] == '[x] enfermeir[x] falou muito.'
 
 def test_translate_one_they():
     sentence = "they are great"
@@ -41,9 +41,9 @@ def test_translate_neutral():
     sentence = "I am tired and I like to read a lot"
     translation = translate(sentence)
     
-    assert translation['first_option'] == 'Eu estou cansada e eu gosto de ler muito.'
-    assert translation['second_option'] == 'Eu estou cansado e eu gosto de ler muito.'
-    assert translation['neutral'] == 'Eu estou cansad[X] e eu gosto de ler muito.'    
+    assert translation['first_option'] == 'Eu estou cansada e gosto muito de ler.'
+    assert translation['second_option'] == 'Eu estou cansado e gosto muito de ler.'
+    assert translation['neutral'] == 'Eu estou cansad[x] e gosto muito de ler.'    
 
 def test_translate_she():
     sentence = "She is a good doctor."
@@ -51,7 +51,15 @@ def test_translate_she():
     
     assert translation['more_likely'] == 'Ela é uma boa médica.'
     assert translation['less_likely'] == 'Ela é um bom médico.'
-    assert translation['neutral'] == 'El[X] é um[X] médic[X] .'   
+    assert translation['neutral'] == 'El[x] é um[x] bom médic[x].'   
+
+def test_translate_he():
+    sentence = "He is a great nurse."
+    translation = translate(sentence)
+
+    assert translation['more_likely'] == 'Ele é um ótimo enfermeiro.'
+    assert translation['less_likely'] == 'É um grande enfermeiro.'
+    assert translation['neutral'] == 'É um[x] grande enfermeir[x].'     
 
 # def test_translate_with_it():
 #     sentence = "The trophy would not fit in the brown suitcase because it was too big."

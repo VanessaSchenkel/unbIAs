@@ -12,23 +12,10 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
 
-def generate_translation(source_sentence, num_return_sequences=1):
+def generate_translation(source_sentence, num_return_sequences = 1):
     translation_model = get_best_translation(
         source_sentence, num_return_sequences)
     return translation_model
-
-
-# def get_best_translation(source_sentence: str):
-#     source_sentence = source_sentence if source_sentence.endswith(
-#         '.') else source_sentence + "."
-
-#     input_ids = tokenizer(source_sentence, return_tensors="pt").input_ids
-
-#     outputs = model.generate(input_ids, num_beams=10, max_new_tokens=200)
-#     translation_model = tokenizer.batch_decode(
-#         outputs, skip_special_tokens=True)
-
-#     return translation_model[0]
 
 
 def get_best_translation(source_sentence: str, num_return_sequences=1):
@@ -53,6 +40,7 @@ def get_best_translation(source_sentence: str, num_return_sequences=1):
         translation_model.append(tokenizer.decode(
             output, skip_special_tokens=True))
 
+    print(translation_model)
     return translation_model
 
 
@@ -77,17 +65,15 @@ def get_constrained_translation_one_subject(source_sentence, constrained_sentenc
     most_likely = tokenizer.decode(outputs[0], skip_special_tokens=True)
     less_likely = tokenizer.decode(outputs[1], skip_special_tokens=True)
 
-    print("most_likely", most_likely, "less_likely", less_likely)
-
     return most_likely, less_likely
 
 
 def generate_translation_with_gender_constrained(source_sentence, constrained_gender):
     source_sentence = source_sentence + \
         '.' if not source_sentence.endswith('.') else source_sentence
-
+    
     input_ids = tokenizer(source_sentence, return_tensors="pt").input_ids
-
+    
     force_words_ids = tokenizer(
         [constrained_gender], add_special_tokens=False).input_ids
 
@@ -95,12 +81,11 @@ def generate_translation_with_gender_constrained(source_sentence, constrained_ge
         input_ids,
         force_words_ids=force_words_ids,
         num_beams=20,
-        num_return_sequences=1,
+        num_return_sequences=3,
         max_new_tokens=200
     )
 
     most_likely = tokenizer.decode(outputs[0], skip_special_tokens=True)
-
     return most_likely
 
 def get_contrained_translation(source, constrained_sentence):
@@ -121,6 +106,7 @@ def get_contrained_translation(source, constrained_sentence):
         max_new_tokens=50
     )
 
+  
     translation = tokenizer.decode(output[0], skip_special_tokens=True)
     
     return translation
