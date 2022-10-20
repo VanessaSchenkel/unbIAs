@@ -13,7 +13,7 @@ from spacy_utils import get_pronoun_on_sentence, get_nlp_en, get_sentence_gender
 from generate_model_translation import get_best_translation, generate_translation, get_constrained_translation_one_subject, get_contrained_translation
 from gender_inflection import get_just_possible_words, format_sentence_inflections
 from constrained_beam_search import get_constrained_sentence, split_sentences_by_nsubj, split_sentence_same_subj, get_constrained
-from generate_neutral import make_neutral_with_pronoun, make_neutral_with_constrained
+from generate_neutral import make_neutral_with_pronoun, make_neutral_with_constrained, make_neutral
 from roberta import get_disambiguate_pronoun
 from format_translations import format_sentence, get_format_translation, format_multiple_sentence
 
@@ -94,15 +94,13 @@ def generate_translation_for_one_subj(source_sentence):
 
 
         if len(constrained_sentence) == 0:
-
             best_translation = get_best_translation(source_sentence)
-            neutral = make_neutral_with_pronoun(best_translation)
+            neutral = make_neutral(best_translation)
 
-            print("BEST", best_translation)
-            print("NEUTRAL", neutral)
+            print("BST", best_translation)
+            print("neutral", neutral)
 
-
-            return best_translation, best_translation, neutral
+            return translation_google, best_translation, neutral
         
         elif len(splitted_google_trans) == 1:
             more_likely, less_likely = get_constrained_translation_one_subject(

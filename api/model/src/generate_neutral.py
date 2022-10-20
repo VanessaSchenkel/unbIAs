@@ -18,26 +18,26 @@ def make_neutral(sentence):
         if len(gender) > 0 and token.text.lower() != "eu":
             if token.text.endswith("o") or token.text.endswith("a"):
                 new_word = token.text[:-1] + "[X]"
-                new_sentence += new_word
+                new_sentence += new_word + " "
             elif token.text.endswith("os") or token.text.endswith("as"):
                 new_word = token.text[:-2] + "[X]s"
-                new_sentence += new_word
+                new_sentence += new_word + " "
             elif token.text.lower() == "um" or token.text.lower() == "uma":
                 new_word = "um[X]"
-                new_sentence += new_word
+                new_sentence += new_word + " "
             elif token.text.lower() == "ele" or token.text.lower() == "ela":
                 new_word = "el[X]"
-                new_sentence += new_word 
+                new_sentence += new_word + " "
             elif token.text.lower() == "eles" or token.text.lower() == "elas":
                 new_word = "el[X]s"
-                new_sentence += new_word     
+                new_sentence += new_word + " " 
         else:
             new_sentence += token.text_with_ws
 
     return new_sentence
 
 
-def make_neutral_with_constrained(sentence, constrained):
+def make_neutral_with_constrained(sentence, constrained = ""):
     new_sentence = ""
     sentence_without_constrained = sentence.replace(constrained, " #### ")
     sentence_to_be_neutral = get_nlp_pt(sentence_without_constrained)
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.INFO)
 
-    neutral = make_neutral_with_pronoun(sentence_fn)
+    neutral = make_neutral(sentence_fn)
     print(neutral)
 
     logging.info("DONE")

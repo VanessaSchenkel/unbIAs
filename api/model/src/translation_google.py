@@ -22,7 +22,7 @@ def translate_text(text):
     # Text can also be a sequence of strings, in which case this method
     # will return a sequence of results for each text.
     result = translate_client.translate(text, source_language="en", target_language="pt-BR")
-
+    print("SENTENCE", result)
     return result["translatedText"]
 
 
@@ -32,7 +32,7 @@ def get_google_translation(source_sentence):
     sentence_formatted = check_I(source_sentence, translation) 
 
     sentence_nlp = get_nlp_pt(sentence_formatted)
-
+   
     return sentence_nlp
 
 def check_I(source_sentence, translation):

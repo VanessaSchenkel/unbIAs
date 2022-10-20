@@ -45,6 +45,14 @@ def test_translate_neutral():
     assert translation['second_option'] == 'Eu estou cansado e eu gosto de ler muito.'
     assert translation['neutral'] == 'Eu estou cansad[X] e eu gosto de ler muito.'    
 
+def test_translate_she():
+    sentence = "She is a good doctor."
+    translation = translate(sentence)
+    
+    assert translation['more_likely'] == 'Ela é uma boa médica.'
+    assert translation['less_likely'] == 'Ela é um bom médico.'
+    assert translation['neutral'] == 'El[X] é um[X] médic[X] .'   
+
 # def test_translate_with_it():
 #     sentence = "The trophy would not fit in the brown suitcase because it was too big."
 #     translation = translate(sentence)
