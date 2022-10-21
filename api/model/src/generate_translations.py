@@ -9,7 +9,7 @@ import more_itertools
 
 # Local imports
 from translation_google import get_google_translation
-from spacy_utils import get_pronoun_on_sentence, get_nlp_en, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, has_gender_in_source, get_noun_chunks
+from spacy_utils import get_pronoun_on_sentence, get_pobj, get_people, get_nlp_en, display_with_pd, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, has_gender_in_source, get_noun_chunks
 from generate_model_translation import get_best_translation, generate_translation_with_gender_constrained, generate_translation, get_constrained_translation_one_subject, get_contrained_translation
 from gender_inflection import get_just_possible_words, format_sentence_inflections
 from constrained_beam_search import get_constrained_sentence, split_sentences_by_nsubj, split_sentence_same_subj, get_constrained, get_constrained_gender
@@ -25,11 +25,12 @@ def translate(source_sentence):
     subjects = get_nsubj_sentence(source_sentence)
     pronoun_list = get_pronoun_on_sentence(source_sentence)
     gender = get_sentence_gender(source_sentence)
+    pobj_list = get_pobj(source_sentence)
         
-    print("subjects, pronoun, gender", subjects, pronoun_list, gender)
+    # print("subjects, pronoun, gender", subjects, pronoun_list, gender)
 
-    for token in source_sentence:
-        print("---->", token, token.pos_, token.morph, token.ent_type_)
+    # for token in source_sentence:
+    #     print("---->", token, " | ", token.pos_, " | ", token.dep_, " | ", token.head)
 
     is_all_same_pronoun = is_all_equal(pronoun_list)
     is_all_same_subject = is_all_equal(subjects)
@@ -53,13 +54,67 @@ def translate(source_sentence):
         
     elif len(set(pronoun_list)) == 1 and all("it" == elem.text for elem in pronoun_list):
         return generate_translation_it(source_sentence)
-        
+    
+    elif len(subjects) > len(pronoun_list) and len(pobj_list) > 0:
+        return generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence)
+
     elif len(subjects) > len(pronoun_list):
         return generate_translation_more_subjects(source_sentence, subjects)
 
     else:
         google_trans = get_google_translation(source_sentence)
         return {"google_translation": google_trans}    
+
+        
+def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
+    print("AQUI CARALHO")
+    model_translation = get_best_translation(source_sentence.text_with_ws, 2)
+    best_with_nsubj = get_best_translation("developer.", 2)
+    # constrained = get_disambiguate_pronoun(source_sentence, "she")
+    translation_nlp = get_nlp_pt("A desenvolvedora discutiu com a designer porque ela não gostou do design.")
+    people = get_people(translation_nlp)
+    test_constrained(translation_nlp, people)
+
+    # pronoun_list = get_nsubj_sentence(translation_nlp)
+    # constrained_sentence = get_constrained(translation_nlp)
+    # constrained_translation = get_constrained_translation_one_subject(source_sentence.text_with_ws, "porque ela não gostou do desenho.")
+    # print("----")
+    # print("model_translation:", model_translation)
+    # print("best_with_nsubj:", best_with_nsubj)
+    # print("pronoun_list:", pronoun_list)
+    # # print(constrained)
+    # print("constrained_sentence:", constrained_sentence)
+    # print("constrained_translation:", constrained_translation)
+
+    return ""
+
+def test_constrained(translation, people):
+    print("----")
+    print("translation:", translation)
+    print("people:", people)
+
+    constrained_sentence = ""
+
+    for token in translation:
+        ancestors = [ancestor for ancestor in token.ancestors]
+        children = [child for child in token.children]
+
+        if not any(item in ancestors for item in people) and not any(item in children for item in people) and token not in people:
+            constrained_sentence += token.text_with_ws
+
+    return constrained_sentence
+
+
+    # TODO checar se o genero ta certo de quem she se refere (roberta ingles e roberta portugues?)
+    # gerar as 3 traduções para quem deveria ser neutro   
+
+
+def get_google_translation(source_sentence):
+    if source_sentence.startswith("The") and source_sentence.endswith("designer"):
+        return get_nlp_pt("O desenvolvedor discutiu com o designer")
+    elif source_sentence.startswith("because") and source_sentence.endswith("design"):    
+        get_nlp_pt("porque ela não gostou do desenho.")
+    return get_nlp_pt("A desenvolvedora discutiu com a designer, porque ela não gostou do design.")
 
 def is_all_equal(list):
     return all(i.text == list[0].text for i in list)
@@ -83,16 +138,22 @@ def get_translation_for_one_word(source_sentence):
 def generate_translation_for_one_subj(source_sentence):
     try:
         translation_google =  get_google_translation(source_sentence) 
-
+        print("translation_google ===", translation_google)
+        
         if "they" in source_sentence or "They" in source_sentence:
             return generate_they_translation(translation_google)
         
         subject = get_nsubj_sentence(translation_google)
-        
+        print("subject ===", subject)
         splitted_google_trans = split_sentence_same_subj(translation_google)
+        print("splitted_google_trans ===", splitted_google_trans)
         source = get_nlp_en(source_sentence)
+        
         splitted_source = split_sentence_same_subj(source)
-        constrained_sentence = get_constrained(source_sentence)     
+        print("splitted_source ===", splitted_source)
+
+        constrained_sentence = get_constrained(source_sentence)  
+        print("constrained_sentence ===", constrained_sentence)   
 
         if len(constrained_sentence) == 0:
             print("ENTROU 1")
@@ -171,14 +232,11 @@ def generate_translation_for_sentence_without_pronoun_and_gender(source_sentence
     except:
         return "An error occurred translating sentence without pronoun and gender"    
 
-# def get_google_translation(sentence):
-#     return get_nlp_pt("A enfermeira falou muito.")
-
 def generate_translation_for_more_than_one_gender(source_sentence, subjects):
     try:
         sentence = format_sentence(source_sentence)
         splitted_list = []
-        print("AQUI")
+        
         for sent in sentence:
             sent = get_nlp_en(sent)
             splitted_list.append(split_sentences_by_nsubj(sent, subjects))
@@ -225,12 +283,20 @@ def generate_translation_more_subjects(source_sentence, subjects):
             sent = get_nlp_en(sent)
             splitted_list.append(split_sentences_by_nsubj(sent, subjects))
         
+        print("===", splitted_list)
+
         collapsed = list(more_itertools.collapse(splitted_list))
+
+        print("collapsed ===", collapsed)
 
         translations = []
         for sentence in collapsed:
             has_gender = has_gender_in_source(sentence)
+            print("has_gender ===",has_gender)
             more_likely, less_likely, neutral =  generate_translation_for_one_subj(sentence)
+            
+            print("more_likely ===", more_likely)
+
             if has_gender:
                 translations.append([more_likely])
             else:

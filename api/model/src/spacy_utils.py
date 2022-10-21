@@ -1,3 +1,12 @@
+"""Usage:
+    spacy_utils.py --sentence=SENTENCE --lang=LANGUAGE [--debug]
+"""
+
+# External imports
+import logging
+from docopt import docopt
+import pandas as pd
+from IPython.display import display
 import spacy
 
 
@@ -34,16 +43,6 @@ def get_nsubj_sentence(sentence):
             nsubj_list.append(token)
 
     return nsubj_list
-
-
-def get_nsubj_sentence(sentence):
-    nsubj_list = []
-    for token in sentence:
-        if token.dep_ == 'nsubj':
-            nsubj_list.append(token)
-
-    return nsubj_list
-
 
 def get_noun_sentence(sentence):
     noun_list = []
@@ -89,4 +88,86 @@ def get_noun_chunks(sentence):
     for chunk in sentence.noun_chunks:
         chunk_list.append(chunk)
 
-    return chunk_list    
+    return chunk_list 
+
+def get_pobj(sentence):
+    pobj_list = []
+    for token in sentence:
+        if token.dep_ == "pobj":
+             pobj_list.append(token)
+
+    return pobj_list  
+
+def get_people(sentence):
+    people = []
+    for token in sentence:
+        if (token.dep_ == "nsubj" and token.pos_ == "NOUN") or (token.dep_ == "obl" and token.pos_ == "NOUN"):
+            people.append(token)
+    
+    return people        
+
+
+def get_all_information(sentence):
+    for token in sentence:
+        children = [child for child in token.children]
+        print("---> Token:", token)   
+        print("-> Pos:", token.pos_, "-> Head:", token.head)   
+        print("-> Lemma:", token.lemma_)   
+        print("-> Morph:", token.morph)  
+        print("-> Children:", children)   
+
+def display_with_pd(sentence):
+    table = {}
+    text_list = []
+    anc = []
+    child = []
+    dep = []
+    head = []
+    morph = []
+    pos = []
+
+    for token in sentence:
+        text_list.append(token.text)
+        anc.append([ancestor for ancestor in token.ancestors])
+        child.append([child for child in token.children])
+        dep.append(token.dep_)
+        head.append(token.head)
+        morph.append(token.morph)
+        pos.append(token.pos_)
+
+    table['text'] = text_list
+    table['anc'] = anc
+    table['child'] = child
+    table['dep'] = dep
+    table['head'] = head
+    table['morph'] = morph
+    table['pos'] = pos
+
+
+    df = pd.DataFrame(table)
+
+    display(df)
+
+if __name__ == "__main__":
+    # Parse command line arguments
+    args = docopt(__doc__)
+    sentence_fn = args["--sentence"]
+    language_fn = args["--lang"]
+    debug = args["--debug"]
+
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    if 'pt' == language_fn:
+        sentence = get_nlp_pt(sentence_fn)
+    else:
+        sentence = get_nlp_en(sentence_fn)
+
+    display_with_pd(sentence)
+    print("------------------------")
+    noun = get_noun_chunks(sentence)
+    print(noun)
+
+    logging.info("DONE")

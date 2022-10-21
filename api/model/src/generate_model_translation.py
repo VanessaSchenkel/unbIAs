@@ -40,7 +40,6 @@ def get_best_translation(source_sentence: str, num_return_sequences=1):
         translation_model.append(tokenizer.decode(
             output, skip_special_tokens=True))
 
-    print(translation_model)
     return translation_model
 
 

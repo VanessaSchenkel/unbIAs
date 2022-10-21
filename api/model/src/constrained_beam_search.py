@@ -12,7 +12,7 @@ def get_constrained_sentence(translation, nsub):
   pronoun = get_nsubj_sentence(translation)
   
   for token in translation:
-    # print("====", token, token.pos_, token.morph, token.dep_, children, token.head)
+    print("====", token, token.pos_, token.morph, token.dep_, children, token.head)
     
     if token != nsub[0] and token not in children and token.pos_ != 'ADJ':
       new_sentence += token.text_with_ws
@@ -28,6 +28,7 @@ def get_constrained_sentence(translation, nsub):
 
   return constrained_sentences[0]
 
+
 def get_constrained_gender(translation):
     head = ""
     word = ""
@@ -42,7 +43,13 @@ def get_constrained_gender(translation):
 def get_constrained(source_sentence):
     source_nlp = get_nlp_en(source_sentence)
     pronoun = get_pronoun_on_sentence(source_nlp)
+    print("pronoun --", pronoun)
+    if len(pronoun) == 0:
+        return ""
+    
     subj = get_disambiguate_pronoun(source_nlp, pronoun[0].text)
+    print("subj --", subj)
+
     masculine_translation, feminine_translation = generate_translation_for_roberta_nsubj(subj)
     translation = get_google_translation(source_sentence)
     translation_nlp = get_nlp_pt(translation)
@@ -101,9 +108,11 @@ def split_sentence_same_subj(sentence):
             new_sentence = new_sentence.strip() + "###" + token.text_with_ws
         else:
             new_sentence += token.text_with_ws
+    
+    if "###" in new_sentence:
+        return new_sentence.split("###")
 
-    splitted = new_sentence.split("###")
-    return splitted  
+    return new_sentence  
 
 
 def generate_translation_for_roberta_nsubj(subject):
