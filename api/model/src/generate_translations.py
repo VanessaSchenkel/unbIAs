@@ -6,6 +6,7 @@
 import logging
 from docopt import docopt
 import more_itertools
+import re
 
 # Local imports
 from translation_google import get_google_translation
@@ -68,16 +69,19 @@ def translate(source_sentence):
         
 def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
     print("AQUI CARALHO")
-    model_translation = get_best_translation(source_sentence.text_with_ws, 2)
-    best_with_nsubj = get_best_translation("developer.", 2)
+    # model_translation = get_best_translation(source_sentence.text_with_ws, 2)
+    # best_with_nsubj = get_best_translation("developer.", 2)
     # constrained = get_disambiguate_pronoun(source_sentence, "she")
     translation_nlp = get_nlp_pt("A desenvolvedora discutiu com a designer porque ela não gostou do design.")
     people = get_people(translation_nlp)
-    test_constrained(translation_nlp, people)
+    # pronoun_list = get_pronoun_on_sentence(translation_nlp)
+    # constrained_sentence = test_constrained(translation_nlp, people)
+    # constrained_translation = get_constrained_translation_one_subject(source_sentence.text_with_ws, constrained_sentence)
+    constrained_splitted = split_on_subj_and_bsubj(translation_nlp, people)
+    for constrained in constrained_splitted:
+        constrained_translation = get_constrained_translation_one_subject(source_sentence.text_with_ws, constrained)
+        print(constrained_translation)
 
-    # pronoun_list = get_nsubj_sentence(translation_nlp)
-    # constrained_sentence = get_constrained(translation_nlp)
-    # constrained_translation = get_constrained_translation_one_subject(source_sentence.text_with_ws, "porque ela não gostou do desenho.")
     # print("----")
     # print("model_translation:", model_translation)
     # print("best_with_nsubj:", best_with_nsubj)
@@ -87,6 +91,25 @@ def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
     # print("constrained_translation:", constrained_translation)
 
     return ""
+
+def split_on_subj_and_bsubj(sentence, people):
+    sentence_splitted = []
+    new_sent = ""   
+    
+    for token in sentence:
+        if token not in people and token.pos_ != "DET":
+            new_sent += token.text_with_ws
+        elif token.pos_ == "DET" and token.head not in people:
+            new_sent += token.text_with_ws
+             
+        if token.is_sent_end or token in people:
+            if len(new_sent) > 0:
+                sentence_splitted.append(new_sent.strip())
+
+            new_sent = ""
+                       
+    return sentence_splitted      
+
 
 def test_constrained(translation, people):
     print("----")
