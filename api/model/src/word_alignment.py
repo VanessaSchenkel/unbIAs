@@ -1,5 +1,5 @@
 """Usage:
-    word_alignment.py --first_sentence=SOURCE --second_sentence=TARGET [--debug]
+    python word_alignment.py --first_sentence=SOURCE --second_sentence=TARGET [--debug]
 """
 # External imports
 import logging
@@ -34,7 +34,6 @@ if __name__ == "__main__":
     first_sentence_fn = args["--first_sentence"]
     second_sentence_fn = args["--second_sentence"]
     debug = args["--debug"]
-
 
     if debug:
         logging.basicConfig(level=logging.DEBUG)

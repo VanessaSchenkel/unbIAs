@@ -1,6 +1,6 @@
 
 """Usage:
-    translation_google.py --sentence=SENTENCE [--debug]
+    python translation_google.py --sentence=SENTENCE [--debug]
 """
 
 # External imports

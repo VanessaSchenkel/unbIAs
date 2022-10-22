@@ -1,5 +1,5 @@
 """Usage:
-    generate_translations.py --sentence=SENTENCE [--debug]
+    python generate_translations.py --sentence=SENTENCE [--debug]
 """
 
 # External imports
@@ -17,6 +17,7 @@ from constrained_beam_search import get_constrained_sentence, split_sentences_by
 from generate_neutral import make_neutral_with_pronoun, make_neutral_with_constrained, make_neutral
 from roberta import get_disambiguate_pronoun
 from format_translations import format_sentence, get_format_translation, format_multiple_sentence, should_remove_first_word, format_with_dot
+from word_alignment import get_word_alignment_pairs
 
 def translate(source_sentence):
     if ' ' not in source_sentence.strip():
@@ -97,16 +98,11 @@ def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
     return ""
 
 def combine_contrained_translations(translations, constrained_splitted, people):
-    
-    splitted = []
-    indexes = []
-    for sentence in translations:
-        for constrained in constrained_splitted:
-            index = sentence.find(constrained)
-            if index >= 0:
-                indexes.append(index)
-    
-    print(indexes)
+    first_translation, second_translation = translations
+    word_alignments = get_word_alignment_pairs(first_translation, second_translation)
+
+    print(word_alignments)
+
     
     # for sentence in translations:
     #     print(sentence)

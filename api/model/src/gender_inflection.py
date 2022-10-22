@@ -1,5 +1,5 @@
 """Usage:
-    gender_inflection.py --word=WORD [--debug]
+    python gender_inflection.py --word=WORD [--debug]
 """
 # External imports
 import itertools
