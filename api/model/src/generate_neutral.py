@@ -1,5 +1,5 @@
 """Usage:
-    python generate_neutral.py --sentence=SENTENCE [--debug]
+    generate_neutral.py --sentence=SENTENCE [--debug]
 """
 
 # External imports

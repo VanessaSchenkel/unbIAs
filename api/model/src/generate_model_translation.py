@@ -1,5 +1,5 @@
 """Usage:
-    python generate_model_translation.py --sentence=SENTENCE [--constrained=CONTRAINED][--debug]
+    generate_model_translation.py --sentence=SENTENCE [--constrained=CONTRAINED][--debug]
 """
 
 # External imports
@@ -52,8 +52,6 @@ def get_constrained_translation_one_subject(source_sentence, constrained_sentenc
         tokenizer(constrained_sentence, add_special_tokens=False).input_ids,
     ]
 
-    print(constrained_sentence)
-
     outputs = model.generate(
         input_ids,
         force_words_ids=force_words_ids,
@@ -66,7 +64,6 @@ def get_constrained_translation_one_subject(source_sentence, constrained_sentenc
     most_likely = tokenizer.decode(outputs[0], skip_special_tokens=True)
     less_likely = tokenizer.decode(outputs[1], skip_special_tokens=True)
 
-    print(most_likely, less_likely)
     return most_likely, less_likely
 
 
@@ -131,7 +128,7 @@ if __name__ == "__main__":
         translation = get_constrained_translation_one_subject(sentence_fn, constrained_fn)
         print("Constrained model:", translation)
     
-    translation = generate_translation(sentence_fn, 3)
+    translation = generate_translation(sentence_fn, 1)
     print("Model: ", translation)
 
     logging.info("DONE")

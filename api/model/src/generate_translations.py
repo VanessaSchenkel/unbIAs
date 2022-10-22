@@ -1,5 +1,5 @@
 """Usage:
-    python generate_translations.py --sentence=SENTENCE [--debug]
+    generate_translations.py --sentence=SENTENCE [--debug]
 """
 
 # External imports
@@ -84,7 +84,7 @@ def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
         constrained_translation = generate_translation_with_gender_constrained(source_sentence.text_with_ws, constrained)
         translations.append(constrained_translation)
     
-    combine_contrained_translations(translations, constrained_splitted, people)
+    translation_constrained = combine_contrained_translations(translations, constrained_splitted, source_sentence)
     
     print("----")
     # print("translations:", translations)
@@ -97,29 +97,43 @@ def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
 
     return ""
 
-def combine_contrained_translations(translations, constrained_splitted, people):
+def combine_contrained_translations(translations, constrained_splitted, source_sentence):
     first_translation, second_translation = translations
     word_alignments = get_word_alignment_pairs(first_translation, second_translation)
+    new_sentence = ""
+    for first_sentence, second_sentence in word_alignments:
+        last_word = new_sentence.strip().split(" ")[-1]
+        if first_sentence == second_sentence and first_sentence != last_word:
+            new_sentence += first_sentence + " "
+        elif any(first_sentence in word for word in constrained_splitted) and first_sentence != last_word:
+            new_sentence += first_sentence + " "
+        elif any(second_sentence in word for word in constrained_splitted) and second_sentence != last_word:
+            new_sentence += second_sentence + " "
 
-    print(word_alignments)
-
+    if len(new_sentence.split(' ')) < len(word_alignments):
+        model_translation = get_best_translation(source_sentence.text_with_ws)
+        model_alignment = get_word_alignment_pairs(model_translation, new_sentence, model="bert-base-uncased", matching_methods="m", align="mwmf")
+        return align_with_model(model_alignment, new_sentence)
     
-    # for sentence in translations:
-    #     print(sentence)
-    #     temp = re.split(rf"({'|'.join(constrained_splitted)})", sentence)
-    #     res = [ele for ele in temp if ele]
+    return new_sentence.strip()
 
-    #     print("sentence:", sentence)
-    #     print("res:", res)
-    #     splitted.append(res)
+def align_with_model(model_alignment, new_sentence):
+    new_sentence_model = ""
+    for model_sentence, alignment_sentence in model_alignment:
+        last_word = new_sentence_model.strip().split(" ")[-1]
+        if model_sentence != alignment_sentence and model_sentence != last_word:
+            token_model = get_nlp_pt(model_sentence)[0]
+            token_alignment = get_nlp_pt(alignment_sentence)[0]
+            
+            if token_model.pos_ != token_alignment.pos_:
+                new_sentence_model += model_sentence + " "
+            
+  
+        if model_sentence == alignment_sentence:
+            new_sentence_model += new_sentence
+            return new_sentence_model.strip()
 
-    
-    # print(splitted)
-    # for sentence in splitted:
-    #     for part_of_sentence in sentence:
-    #         if part_of_sentence in constrained_splitted:
-    #             print("part", part_of_sentence)
-
+    return new_sentence_model.strip() 
 
 
 
@@ -143,10 +157,6 @@ def split_on_subj_and_bsubj(sentence, people):
 
 
 def test_constrained(translation, people):
-    print("----")
-    print("translation:", translation)
-    print("people:", people)
-
     constrained_sentence = ""
 
     for token in translation:
@@ -235,9 +245,7 @@ def generate_translation_with_subject_and_neutral(source_sentence):
     try:
         translation = generate_translation(source_sentence.text, 2)
         translation_nlp = get_nlp_pt(translation[0])
-        print("translation", translation)
         neutral = make_neutral(translation_nlp)
-        print("translation", neutral)
 
         return {"first_option": translation[0], "second_option": translation[1], "neutral": neutral}
     except:
@@ -277,7 +285,6 @@ def generate_they_translation(translation):
 def generate_translation_for_sentence_without_pronoun_and_gender(source_sentence):
     try:
         translation = generate_translation(source_sentence.text)
-        print(translation, "translation")
         translation = get_nlp_pt(translation)
         possible_words = get_just_possible_words(translation)
         sentences = format_sentence_inflections(possible_words)
@@ -337,20 +344,13 @@ def generate_translation_more_subjects(source_sentence, subjects):
             sent = get_nlp_en(sent)
             splitted_list.append(split_sentences_by_nsubj(sent, subjects))
         
-        print("===", splitted_list)
-
         collapsed = list(more_itertools.collapse(splitted_list))
-
-        print("collapsed ===", collapsed)
 
         translations = []
         for sentence in collapsed:
             has_gender = has_gender_in_source(sentence)
-            print("has_gender ===",has_gender)
             more_likely, less_likely, neutral =  generate_translation_for_one_subj(sentence)
             
-            print("more_likely ===", more_likely)
-
             if has_gender:
                 translations.append([more_likely])
             else:

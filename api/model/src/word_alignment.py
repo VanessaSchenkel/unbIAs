@@ -1,25 +1,25 @@
 """Usage:
-    python word_alignment.py --first_sentence=SOURCE --second_sentence=TARGET [--debug]
+    word_alignment.py --first_sentence=SOURCE --second_sentence=TARGET [--debug]
 """
 # External imports
 import logging
 from docopt import docopt
 from simalign import SentenceAligner
 
-
-def initialize(first_sentence, second_sentence):
-    myaligner = SentenceAligner(model="bert", token_type="bpe", matching_methods="mai")
+#matching-methods = "m: Max Weight Matching (mwmf), a: argmax (inter), i: itermax, f: forward (fwd), r: reverse (rev)"
+def initialize(first_sentence, second_sentence, model, matching_methods, align):
+    myaligner = SentenceAligner(model=model, token_type="bpe", matching_methods=matching_methods)
     alignments = myaligner.get_word_aligns(first_sentence, second_sentence)
-    return alignments['itermax']
+    return alignments[align]
 
-def get_word_alignment_pairs(first_sentence, second_sentence):
-    print("Possible Alignments From SimAlign")
-    print("Word in Sent 1 -----> Word in Sent 2")
+def get_word_alignment_pairs(first_sentence, second_sentence, model="bert-base-uncased", matching_methods = "i", align = "itermax"):
+    source_tokens, target_tokens = format_sentences(first_sentence, second_sentence)
     sent1 = []
     sent2 = []
-    source_tokens = first_sentence.split(' ')
-    target_tokens = second_sentence.split(' ')
-    alignments = initialize(source_tokens, target_tokens)
+    print("Possible Alignments From SimAlign")
+    print("Word in Sent 1 -----> Word in Sent 2")
+    print(first_sentence, second_sentence)
+    alignments = initialize(source_tokens, target_tokens, model, matching_methods, align)
     for item in alignments:
      print(source_tokens[item[0]],"---------->", target_tokens[item[1]])
      sent1.append(source_tokens[item[0]])
@@ -27,6 +27,16 @@ def get_word_alignment_pairs(first_sentence, second_sentence):
 
     word_align_pairs = zip(sent1,sent2)
     return list(word_align_pairs) 
+
+def format_sentences(first_sentence, second_sentence):
+    sent1 = first_sentence.split()
+    sent2 = second_sentence.split()
+
+    if len(sent1) >= len(sent2):
+        return sent1, sent2
+    else:
+        return sent2, sent1
+
 
 if __name__ == "__main__":
     # Parse command line arguments

@@ -1,5 +1,5 @@
 """Usage:
-    python spacy_utils.py --sentence=SENTENCE --lang=LANGUAGE [--debug]
+    spacy_utils.py --sentence=SENTENCE --lang=LANGUAGE [--debug]
 """
 
 # External imports

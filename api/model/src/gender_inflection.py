@@ -1,5 +1,5 @@
 """Usage:
-    python gender_inflection.py --word=WORD [--debug]
+    gender_inflection.py --word=WORD [--debug]
 """
 # External imports
 import itertools
@@ -105,7 +105,6 @@ def get_just_possible_words(translation):
         else:
             inflections = get_gender_inflections(word.text.lower())
             forms = []
-            # print(inflections, "inflections")
             if inflections == "No matches":   
                 forms.append(word.text)
                 forms.append(word.text)

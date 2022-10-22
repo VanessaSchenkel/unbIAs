@@ -43,12 +43,10 @@ def get_constrained_gender(translation):
 def get_constrained(source_sentence):
     source_nlp = get_nlp_en(source_sentence)
     pronoun = get_pronoun_on_sentence(source_nlp)
-    print("pronoun --", pronoun)
     if len(pronoun) == 0:
         return ""
     
     subj = get_disambiguate_pronoun(source_nlp, pronoun[0].text)
-    print("subj --", subj)
 
     masculine_translation, feminine_translation = generate_translation_for_roberta_nsubj(subj)
     translation = get_google_translation(source_sentence)
