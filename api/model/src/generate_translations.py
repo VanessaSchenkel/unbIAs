@@ -78,12 +78,16 @@ def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
     # constrained_sentence = test_constrained(translation_nlp, people)
     # constrained_translation = get_constrained_translation_one_subject(source_sentence.text_with_ws, constrained_sentence)
     constrained_splitted = split_on_subj_and_bsubj(translation_nlp, people)
+    translations = []
     for constrained in constrained_splitted:
-        constrained_translation = get_constrained_translation_one_subject(source_sentence.text_with_ws, constrained)
-        print(constrained_translation)
-
-    # print("----")
-    # print("model_translation:", model_translation)
+        constrained_translation = generate_translation_with_gender_constrained(source_sentence.text_with_ws, constrained)
+        translations.append(constrained_translation)
+    
+    combine_contrained_translations(translations, constrained_splitted, people)
+    
+    print("----")
+    # print("translations:", translations)
+    # print("constrained_splitted:", constrained_splitted)
     # print("best_with_nsubj:", best_with_nsubj)
     # print("pronoun_list:", pronoun_list)
     # # print(constrained)
@@ -91,6 +95,37 @@ def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
     # print("constrained_translation:", constrained_translation)
 
     return ""
+
+def combine_contrained_translations(translations, constrained_splitted, people):
+    
+    splitted = []
+    indexes = []
+    for sentence in translations:
+        for constrained in constrained_splitted:
+            index = sentence.find(constrained)
+            if index >= 0:
+                indexes.append(index)
+    
+    print(indexes)
+    
+    # for sentence in translations:
+    #     print(sentence)
+    #     temp = re.split(rf"({'|'.join(constrained_splitted)})", sentence)
+    #     res = [ele for ele in temp if ele]
+
+    #     print("sentence:", sentence)
+    #     print("res:", res)
+    #     splitted.append(res)
+
+    
+    # print(splitted)
+    # for sentence in splitted:
+    #     for part_of_sentence in sentence:
+    #         if part_of_sentence in constrained_splitted:
+    #             print("part", part_of_sentence)
+
+
+
 
 def split_on_subj_and_bsubj(sentence, people):
     sentence_splitted = []
