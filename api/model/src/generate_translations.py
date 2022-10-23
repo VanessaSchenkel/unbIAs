@@ -70,14 +70,8 @@ def translate(source_sentence):
         
 def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
     print("AQUI CARALHO")
-    # model_translation = get_best_translation(source_sentence.text_with_ws, 2)
-    # best_with_nsubj = get_best_translation("developer.", 2)
-    # constrained = get_disambiguate_pronoun(source_sentence, "she")
     translation_nlp = get_nlp_pt("A desenvolvedora discutiu com a designer porque ela não gostou do design.")
     people = get_people(translation_nlp)
-    # pronoun_list = get_pronoun_on_sentence(translation_nlp)
-    # constrained_sentence = test_constrained(translation_nlp, people)
-    # constrained_translation = get_constrained_translation_one_subject(source_sentence.text_with_ws, constrained_sentence)
     constrained_splitted = split_on_subj_and_bsubj(translation_nlp, people)
     translations = []
     for constrained in constrained_splitted:
@@ -86,16 +80,83 @@ def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
     
     translation_constrained = combine_contrained_translations(translations, constrained_splitted, source_sentence)
     
-    print("----")
-    # print("translations:", translations)
-    # print("constrained_splitted:", constrained_splitted)
-    # print("best_with_nsubj:", best_with_nsubj)
-    # print("pronoun_list:", pronoun_list)
-    # # print(constrained)
-    # print("constrained_sentence:", constrained_sentence)
-    # print("constrained_translation:", constrained_translation)
+    # pronouns = get_pronoun_on_sentence(source_sentence)
+
+    # subjects = []
+    # for pronoun in pronouns:
+    #     subject = get_disambiguate_pronoun(source_sentence, pronoun)
+    #     subjects.append(subject)
+
+    # print("----")
+    # print(pronouns)
+    # print(subjects) 
+
+    subjects = [{'pronoun': 'she', 'subject':'The developer'}]
+    get_gender_translations(subjects, source_sentence.text_with_ws, translation_constrained, people)
+
 
     return ""
+def get_gender_translations(subjects, source_sentence, translation_constrained, people):
+        word_alignments = get_word_alignment_pairs(source_sentence, translation_constrained, matching_methods="m", align="mwmf")
+        subj_translated = ""
+        gender_pronoun = ""
+
+        for subject in subjects:
+            subj_pronoun = get_nlp_en(subject['pronoun'])
+            gender_pronoun = set(get_sentence_gender(subj_pronoun))
+            
+            for first_sentence, second_sentence in word_alignments:
+                if first_sentence in subject['subject']:
+                    subj_translated += second_sentence + " "
+                elif second_sentence in subject['subject']:
+                    subj_translated += first_sentence + " "
+        
+        print("gender pronoun:", gender_pronoun)  
+
+        translation_subj = get_nlp_pt(subj_translated)
+        translation_gender = set(get_sentence_gender(translation_subj))
+        
+        print("translation_gender:", translation_gender)
+
+        people_to_neutral = [person.text for person in people if person.text not in subj_translated]
+        
+        words_to_neutral = []
+        translation = get_nlp_pt(translation_constrained)
+        index_to_replace = []
+
+        for index, token in enumerate(translation):
+            if token.head.text in people_to_neutral or token.text in people_to_neutral:
+                words_to_neutral.append(token)
+                index_to_replace.append(index)
+
+        print("------")
+        print(words_to_neutral)
+        inflections = get_just_possible_words(words_to_neutral)
+        print(inflections)
+        print(index_to_replace)
+
+        first_sentence, second_sentence, third_sentence = format_translations_subjs(index_to_replace, translation, inflections)
+        
+        return {"first_option": first_sentence, "second_option": second_sentence, "neutral": third_sentence}
+
+        
+def format_translations_subjs(index_to_replace, sentence, inflections):
+    translations = []
+    for id, index in enumerate(index_to_replace):
+        new_sentence = ""
+        cont = 0
+        for index, word in enumerate(sentence):
+            if index not in index_to_replace:
+                new_sentence += word.text + " "
+            else:
+                new_sentence += inflections[cont][id] + " "
+                cont = cont + 1
+        
+        translations.append(new_sentence.strip())
+
+    print("TRANSLATIONS ---->", translations)
+    return translations       
+            
 
 def combine_contrained_translations(translations, constrained_splitted, source_sentence):
     first_translation, second_translation = translations
@@ -112,7 +173,7 @@ def combine_contrained_translations(translations, constrained_splitted, source_s
 
     if len(new_sentence.split(' ')) < len(word_alignments):
         model_translation = get_best_translation(source_sentence.text_with_ws)
-        model_alignment = get_word_alignment_pairs(model_translation, new_sentence, model="bert-base-uncased", matching_methods="m", align="mwmf")
+        model_alignment = get_word_alignment_pairs(model_translation, new_sentence, matching_methods="m", align="mwmf")
         return align_with_model(model_alignment, new_sentence)
     
     return new_sentence.strip()
