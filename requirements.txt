@@ -8,3 +8,6 @@ sacremoses
 flask 
 python-dotenv
 google-cloud-translate
+more_itertools
+pytest
+simalign
