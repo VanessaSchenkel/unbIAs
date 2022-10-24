@@ -37,7 +37,6 @@ def get_constrained_gender(translation):
             head = str(token.head.text)
         elif token.text == head and token.dep_ == "ROOT":
             word = token.text
-    print("WORD:", word)
     return word        
 
 def get_constrained(source_sentence):

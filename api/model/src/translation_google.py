@@ -16,7 +16,6 @@ def translate_text(text):
 
     translate_client = translate.Client()
 
-    print(text)
     if isinstance(text, six.binary_type):
         text = text.decode("utf-8")
 

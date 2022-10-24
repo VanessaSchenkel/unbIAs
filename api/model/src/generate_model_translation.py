@@ -64,7 +64,6 @@ def get_constrained_translation_one_subject(source_sentence, constrained_sentenc
     most_likely = tokenizer.decode(outputs[0], skip_special_tokens=True)
     less_likely = tokenizer.decode(outputs[1], skip_special_tokens=True)
 
-    print(most_likely, less_likely)
     return most_likely, less_likely
 
 
@@ -129,7 +128,6 @@ def get_contrained_translation(source, constrained_sentence):
         max_new_tokens=50
     )
 
-  
     translation = tokenizer.decode(output[0], skip_special_tokens=True)
     
     return translation
