@@ -51,7 +51,7 @@ def translate(source_sentence):
         return generate_translation_with_subject_and_neutral(source_sentence)    
 
     elif len(subjects) == len(set(pronoun_list)) and not is_all_same_subject:
-        return generate_translation_for_more_than_one_gender(source_sentence, subjects)
+        return generate_translation_for_more_than_one_gender(source_sentence)
         
     elif len(set(pronoun_list)) == 1 and all("it" == elem.text for elem in pronoun_list):
         return generate_translation_it(source_sentence)
@@ -414,37 +414,13 @@ def generate_translation_for_sentence_without_pronoun_and_gender(source_sentence
         return sentences
     except:
         return "An error occurred translating sentence without pronoun and gender"    
+ 
 
-def generate_translation_for_more_than_one_gender(source_sentence, subjects):
-    try:
-
-        generate_contrained_translation(source_sentence)
-
-        return ""
-        # sentence = format_sentence(source_sentence)
-        # splitted_list = []
-        # print("SENTENCE:", sentence)
-        # print("subjects:", subjects)
-        # print("source_sentence:", source_sentence)
-
-        # for sent in sentence:
-        #     sent = get_nlp_en(sent)
-        #     splitted_list.append(split_sentences_by_nsubj(sent, subjects))
-        
-        # collapsed = list(more_itertools.collapse(splitted_list))
-
-        # translation = generate_contrained_translation(collapsed)
-        # format_translation = format_with_dot(translation)
-
-        # return format_translation
-    except:
-        return "An error occurred translating more than one gender on the sentence"    
-
-
-def generate_contrained_translation(source_sentence):
+def generate_translation_for_more_than_one_gender(source_sentence):
     try:
         sentences = format_sentence(source_sentence)
-        translations = ""
+        translations_more_likely = []
+        translations_neutral = []
         for sentence in sentences:
             
             should_remove_first = should_remove_first_word(sentence)
@@ -452,48 +428,37 @@ def generate_contrained_translation(source_sentence):
             sentence_to_translate = ""
             word_to_add = ""
             if should_remove_first:
-                sentence_to_translate =  sentence.split(' ', 1)[1]
-                word_to_add = " " + "mas" + " "
-                # word_to_add = " " + translation_google_splitted.text_with_ws.split()[0] + " "
+                sentence_to_translate =  sentence.strip().split(' ', 1)[1]
+                first_word = sentence.strip().split(' ', 1)[0]
+                word_to_add = get_word_to_add(first_word) + " "
             else:
                 sentence_to_translate = sentence
             
+            sentence_to_translate += "."
             sent = get_nlp_en(sentence_to_translate)
-            p = generate_translation_for_one_subj(sent)
-            print(p)
+            translations = generate_translation_for_one_subj(sent)
+            more_likely = word_to_add + translations['more_likely']
+            neutral = word_to_add + translations['neutral']
+            translations_more_likely.append(more_likely)
+            translations_neutral.append(neutral)
 
+        sentence_more_likely = " ".join(translations_more_likely).replace(".", "").lower().capitalize() + "."
+        sentence_neutral = " ".join(translations_neutral).replace(".", "").lower().capitalize() + "."
 
-        return ""
-        # translation = ""
-        # for sentence in sentences_splitted:
-        #     translation_google_splitted = get_google_translation(sentence)
-        #     translation_nlp = get_nlp_pt(translation_google_splitted)
-        #     constrained_sentence = get_constrained_gender(translation_google_splitted)
-        #     print("constrained_sentence:", constrained_sentence)
-            
-            
- 
-    
-        #     translation_contrained = generate_translation_with_gender_constrained(sentence_to_translate, constrained_sentence)
-        #     translation = translation + word_to_add + translation_contrained
-
-        # return translation   
-
-
-        # translation = ""
-        # for sentence in sentences_splitted:
-        #     traslation_google_splitted = get_google_translation(sentence)
-
-        #     nsub_google = get_nsubj_sentence(traslation_google_splitted)
-
-        #     constrained_sentence = get_constrained_sentence(traslation_google_splitted, nsub_google)
-
-        #     translation_contrained = get_contrained_translation(sentence, constrained_sentence)
-        #     translation += translation_contrained
-
-        # return translation     
+        return {"translation": sentence_more_likely, "neutral": sentence_neutral}
+          
     except:
-        return "An error occurred generating constrained translation"       
+        return "An error occurred translating more than one gender on the sentence"    
+
+def get_word_to_add(word):
+    w = get_nlp_en(word)
+    for token in w:
+        if token.is_punct:
+            return token.text
+
+    word_translatted =  generate_translation(word)
+    return word_translatted
+
 
 def generate_translation_more_subjects(source_sentence, subjects):
     try:
