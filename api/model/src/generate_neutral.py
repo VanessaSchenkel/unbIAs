@@ -15,7 +15,6 @@ def make_neutral(sentence):
     new_sentence = ""
     for token in sentence:
         gender = token.morph.get("Gender")
-        print(token, gender, token.morph, token.pos_)
         
         if len(gender) > 0 and token.text.lower() != "eu":
             if token.text.endswith("o") or token.text.endswith("a"):

@@ -101,7 +101,7 @@ def get_pobj(sentence):
 def get_people(sentence):
     people = []
     for token in sentence:
-        if (token.dep_ == "nsubj" and token.pos_ == "NOUN") or (token.dep_ == "obl" and token.pos_ == "NOUN"):
+        if (token.dep_ == "nsubj" and token.pos_ == "NOUN") or (token.dep_ == "obl" and token.pos_ == "NOUN") or token.text.lower() == "eu":
             people.append(token)
     
     return people        

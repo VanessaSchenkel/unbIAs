@@ -61,6 +61,14 @@ def test_translate_he():
     assert translation['less_likely'] == 'É um grande enfermeiro.'
     assert translation['neutral'] == 'É um[x] grande enfermeir[x].'     
 
+def test_translate_two_subj_one_pronoun():
+    sentence = "The developer argued with the designer because she did not like the design."
+    translation = translate(sentence)
+
+    assert translation['first_option'] == 'A desenvolvedora discutiu com o designer porque ela não gostou do design.'
+    assert translation['second_option'] == 'A desenvolvedora discutiu com a designer porque ela não gostou do design.'
+    assert translation['neutral'] == 'A desenvolvedora discutiu com [x] designer porque ela não gostou do design.'    
+
 # def test_translate_with_it():
 #     sentence = "The trophy would not fit in the brown suitcase because it was too big."
 #     translation = translate(sentence)

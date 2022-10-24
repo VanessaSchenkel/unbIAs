@@ -12,7 +12,7 @@ def get_constrained_sentence(translation, nsub):
   pronoun = get_nsubj_sentence(translation)
   
   for token in translation:
-    print("====", token, token.pos_, token.morph, token.dep_, children, token.head)
+    # print("====", token, token.pos_, token.morph, token.dep_, children, token.head)
     
     if token != nsub[0] and token not in children and token.pos_ != 'ADJ':
       new_sentence += token.text_with_ws
@@ -37,19 +37,19 @@ def get_constrained_gender(translation):
             head = str(token.head.text)
         elif token.text == head and token.dep_ == "ROOT":
             word = token.text
-    
+    print("WORD:", word)
     return word        
 
 def get_constrained(source_sentence):
-    source_nlp = get_nlp_en(source_sentence)
-    pronoun = get_pronoun_on_sentence(source_nlp)
+    # source_nlp = get_nlp_en(source_sentence)
+    pronoun = get_pronoun_on_sentence(source_sentence)
+    
     if len(pronoun) == 0:
         return ""
     
-    subj = get_disambiguate_pronoun(source_nlp, pronoun[0].text)
-
+    subj = get_disambiguate_pronoun(source_sentence, pronoun[0])
     masculine_translation, feminine_translation = generate_translation_for_roberta_nsubj(subj)
-    translation = get_google_translation(source_sentence)
+    translation = get_google_translation(source_sentence.text_with_ws)
     translation_nlp = get_nlp_pt(translation)
     constrained_sentence = ""
 
@@ -102,7 +102,12 @@ def split_sentence_same_subj(sentence):
     new_sentence = ""
 
     for token in sentence:
-        if "CCONJ" == token.pos_ or ("PUNCT" == token.pos_ and token.text != "."):          
+        next_token = sentence[-1]
+        if not token.is_sent_end:
+            next_token = sentence[token.i + 1] 
+        if ("PUNCT" == token.pos_ and token.text != ".") and next_token.pos_ != "CCONJ":          
+            new_sentence = new_sentence.strip() + "###" + token.text_with_ws
+        elif token.pos_ == "CCONJ":
             new_sentence = new_sentence.strip() + "###" + token.text_with_ws
         else:
             new_sentence += token.text_with_ws
@@ -117,7 +122,7 @@ def generate_translation_for_roberta_nsubj(subject):
     translation = generate_translation(subject)
     translation = get_nlp_pt(translation)
     possible_words = get_just_possible_words(translation)
-
+    
     combined = [j for i in zip(*possible_words) for j in i]
 
     joined = " ".join(combined)

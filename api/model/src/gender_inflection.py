@@ -78,7 +78,8 @@ def format_sentence_inflections(possible_words):
     combined = [j for i in zip(*possible_words) for j in i]
 
     joined = " ".join(combined)
-    splitted_by_dot = joined.split(".")
+    joined_replace_comma = joined.replace(" ,", ",")
+    splitted_by_dot = joined_replace_comma.split(".")
 
     first_option = splitted_by_dot[0].strip().capitalize() + "."
     second_option = splitted_by_dot[1].strip().capitalize() + "."
@@ -100,7 +101,7 @@ def get_split_sentences(sentence):
 def get_just_possible_words(translation):
     forms_list = []
     for word in translation:
-        if word.pos_ == "CCONJ" or word.pos_ == "PUNCT":
+        if word.pos_ == "CCONJ" or word.pos_ == "PUNCT" or word.pos_ == "VERB":
             forms_list.append([word.text, word.text, word.text])
         else:
             inflections = get_gender_inflections(word.text.lower())
