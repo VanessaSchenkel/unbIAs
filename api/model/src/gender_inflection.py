@@ -8,9 +8,9 @@ from docopt import docopt
 import ast
 import csv
 
+# Local imports
 from generate_neutral import make_neutral
 from spacy_utils import get_nlp_pt, get_word_pos_and_morph
-
 
 def get_gender_inflections(word: str):
     gender_inflections = {}
@@ -86,16 +86,6 @@ def format_sentence_inflections(possible_words):
     neutral = splitted_by_dot[2].strip().capitalize() + "."
 
     return first_option, second_option, neutral
-
-def get_split_sentences(sentence):
-    sentence = get_nlp_pt(sentence)
-    tokens_id = []
-
-    for token in sentence:
-        if token.tag_ == "CCONJ" or token.tag_ == "PUNCT":
-            tokens_id.append(token.i)
-
-    return tokens_id        
 
 
 def get_just_possible_words(translation):

@@ -110,28 +110,6 @@ def generate_translation_with_gender_constrained(source_sentence, constrained_ge
     most_likely = tokenizer.decode(outputs[0], skip_special_tokens=True)
     return most_likely
 
-def get_contrained_translation(source, constrained_sentence):
-    source = source.strip() + "."
-    constrained_sentence = constrained_sentence.strip().lstrip(",") + "."
-    
-    input_ids = tokenizer(source, return_tensors="pt").input_ids
-
-    force_words_ids = [
-        tokenizer([constrained_sentence], add_special_tokens=False).input_ids,
-    ]
-
-    output = model.generate(
-        input_ids,
-        force_words_ids=force_words_ids,
-        num_beams=20,
-        num_return_sequences=3,
-        max_new_tokens=50
-    )
-
-    translation = tokenizer.decode(output[0], skip_special_tokens=True)
-    
-    return translation
-
 
 
 if __name__ == "__main__":

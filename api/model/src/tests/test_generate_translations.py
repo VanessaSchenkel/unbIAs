@@ -74,9 +74,8 @@ def test_translate_more_than_one_gender():
     assert translation['translation'] == 'A médica terminou seu trabalho mas o enfermeiro ainda estava almoçando.'
     assert translation['neutral'] == '[x] médic[x] terminou seu trabalho mas [x] enfermeir[x] ainda estava almoçando.'
 
-# def test_translate_with_it():
-#     sentence = "The trophy would not fit in the brown suitcase because it was too big."
-#     translation = translate(sentence)
-#     print(translation)
+def test_translate_with_it():
+    sentence = "The trophy would not fit in the brown suitcase because it was too big."
+    translation = translate(sentence)
     
-#     assert translation['translation_it'] == 'O troféu não cabia na mala marrom porque era muito grande.'
+    assert translation['translation_it'] == 'O troféu não cabia na mala marrom porque era muito grande.'

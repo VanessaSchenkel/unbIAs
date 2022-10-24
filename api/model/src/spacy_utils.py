@@ -9,10 +9,8 @@ import pandas as pd
 from IPython.display import display
 import spacy
 
-
 nlp = spacy.load("pt_core_news_lg")
 nlp_en = spacy.load("en_core_web_lg")
-
 
 def get_nlp_en(sentence):
     return nlp_en(sentence)
@@ -20,7 +18,6 @@ def get_nlp_en(sentence):
 
 def get_nlp_pt(sentence):
     return nlp(sentence)
-
 
 def has_gender_in_source(sentence):
     sentence_nlp = get_nlp_en(sentence)
@@ -105,7 +102,6 @@ def get_people(sentence):
             people.append(token)
     
     return people        
-
 
 def get_all_information(sentence):
     for token in sentence:

@@ -1,5 +1,4 @@
 import itertools
-import re
 
 from spacy_utils import get_nlp_pt, get_nlp_en
 
@@ -13,11 +12,6 @@ def format_sentence(sentence):
 
     splitted = new_sentence.split("###")
     return splitted  
-
-def get_format_translation(translation, regex = r".,", subst = ","):
-    result = re.sub(regex, subst, translation, 0, re.MULTILINE)
-
-    return result  
 
 def format_with_dot(translation):
     sentence = get_nlp_pt(translation)
@@ -54,3 +48,18 @@ def should_remove_first_word(sentence):
     for token in sent:
         return (token.pos_ == "CCONJ" or token.is_punct) and token.i == 0
 
+def format_translations_subjs(index_to_replace, sentence, inflections):
+    translations = []
+    for id, index in enumerate(index_to_replace):
+        new_sentence = ""
+        cont = 0
+        for index, word in enumerate(sentence):
+            if index not in index_to_replace:
+                new_sentence += word.text + " "
+            else:
+                new_sentence += inflections[cont][id] + " "
+                cont = cont + 1
+        
+        translations.append(new_sentence.strip())
+
+    return translations

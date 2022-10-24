@@ -1,43 +1,103 @@
+from word_alignment import get_word_alignment_pairs
 from gender_inflection import get_just_possible_words
-from generate_model_translation import generate_translation
+from generate_model_translation import generate_translation, get_best_translation
 from translation_google import get_google_translation
 from roberta import get_disambiguate_pronoun
-from spacy_utils import get_nlp_en, get_nsubj_sentence, get_pronoun_on_sentence, get_nlp_pt
+from spacy_utils import get_nlp_en, get_pronoun_on_sentence, get_nlp_pt
 
-def get_constrained_sentence(translation, nsub):  
-  constrained_sentences = []
+def get_constrained_translation(translation, people):
+    constrained_sentence = ""
+    list_constrained = []
 
-  children = [child for child in nsub[0].children]
-  new_sentence = ""
-  pronoun = get_nsubj_sentence(translation)
-  
-  for token in translation:
-    # print("====", token, token.pos_, token.morph, token.dep_, children, token.head)
-    
-    if token != nsub[0] and token not in children and token.pos_ != 'ADJ':
-      new_sentence += token.text_with_ws
-    
-    if (token.pos_ == 'ADJ' or token.is_sent_end) and len(new_sentence) > 0:
-        lefts = [t for t in token.lefts]
-        
-        if len(lefts) > 0 and lefts[0].pos_ == 'DET':
-            new_sentence = ""
-        else:
-            constrained_sentences.append(new_sentence.strip())
-            new_sentence = ""
-
-  return constrained_sentences[0]
-
-
-def get_constrained_gender(translation):
-    head = ""
-    word = ""
     for token in translation:
-        if token.pos_ == "PRON" and token.dep_ == "nsubj":
-            head = str(token.head.text)
-        elif token.text == head and token.dep_ == "ROOT":
-            word = token.text
-    return word        
+        ancestors = [ancestor for ancestor in token.ancestors]
+        children = [child for child in token.children]
+
+        if not any(item in ancestors for item in people) and not any(item in children for item in people) and token not in people:
+            if token.pos_ != "PUNCT" or len(constrained_sentence) > 0:
+                constrained_sentence += token.text_with_ws
+        
+        elif token.text.lower() != 'eu' and len(constrained_sentence) > 0:
+            list_constrained.append(constrained_sentence.strip())
+            constrained_sentence = ""
+
+        if token.is_sent_end and len(constrained_sentence) > 0:
+            list_constrained.append(constrained_sentence.strip())
+    
+    if len(list_constrained) == 1 and len(translation.text_with_ws) == len(list_constrained[0]):
+        return ""
+
+    return list_constrained
+
+def align_with_model(model_alignment, new_sentence):
+    new_sentence_model = ""
+
+    for model_sentence, alignment_sentence in model_alignment:
+        last_word = new_sentence_model.strip().split(" ")[-1]
+        
+        if model_sentence != alignment_sentence and model_sentence != last_word:
+            token_model = get_nlp_pt(model_sentence)[0]
+            token_alignment = get_nlp_pt(alignment_sentence)[0]
+            
+            if token_model.pos_ != token_alignment.pos_:
+                new_sentence_model += model_sentence + " "
+                
+            
+        if model_sentence == alignment_sentence:
+            new_sentence_model += new_sentence.strip() + "."
+            return new_sentence_model
+    
+    return new_sentence_model.strip() + "." 
+
+def combine_contrained_translations(translations, constrained_splitted, source_sentence, matching_methods = "i", align = "itermax"):
+    first_translation, second_translation = translations
+    word_alignments = get_word_alignment_pairs(first_translation.strip("."), second_translation.strip("."), matching_methods=matching_methods, align=align)
+    new_sentence = ""
+    for first_sentence, second_sentence in word_alignments:
+        last_word = new_sentence.strip().split(" ")[-1]
+
+        if first_sentence == second_sentence and first_sentence != last_word:
+            new_sentence += first_sentence + " "
+
+        elif any(first_sentence in word for word in constrained_splitted) and first_sentence != last_word:
+            new_sentence += first_sentence + " "
+        
+        elif any(second_sentence in word for word in constrained_splitted) and second_sentence != last_word:
+            new_sentence += second_sentence + " "  
+        
+        elif first_sentence != second_sentence and first_sentence != last_word:
+            first_token = get_nlp_pt(first_sentence)[0]
+            second_token = get_nlp_pt(second_sentence)[0]
+
+            if first_token.lemma_ == second_token.lemma_ or first_token.text[:-1] == second_token.text:
+                new_sentence += first_sentence + " "
+            
+    
+    if len(new_sentence.strip().split(' ')) < len(word_alignments):
+        model_translation = get_best_translation(source_sentence.text_with_ws)
+        model_alignment = get_word_alignment_pairs(model_translation.strip("."), new_sentence, matching_methods="m", align="mwmf")
+        return align_with_model(model_alignment, new_sentence)
+    
+
+    return new_sentence.strip() + "."    
+
+def split_on_subj_and_bsubj(sentence, people):
+    sentence_splitted = []
+    new_sent = ""   
+    
+    for token in sentence:
+        if token not in people and token.pos_ != "DET":
+            new_sent += token.text_with_ws
+        elif token.pos_ == "DET" and token.head not in people:
+            new_sent += token.text_with_ws
+             
+        if token.is_sent_end or token in people:
+            if len(new_sent) > 0:
+                sentence_splitted.append(new_sent.strip())
+
+            new_sent = ""
+                       
+    return sentence_splitted            
 
 def get_constrained(source_sentence):
     # source_nlp = get_nlp_en(source_sentence)
@@ -82,11 +142,6 @@ def split_sentences_by_nsubj(source_sentence, subj_list):
     splitted = []
     sentence_complete = source_sentence
     sentence_to_remove = ""
-    # is_all_the_same = is_all_same_pronoun(source_sentence)
-
-    # print(is_all_the_same, "is_all_the_same")
-    # if is_all_the_same:
-    #     return [source_sentence.text_with_ws]
 
     for sub in subj_list:
         sentence = get_new_sentence_without_subj(sentence_complete, sentence_to_remove)

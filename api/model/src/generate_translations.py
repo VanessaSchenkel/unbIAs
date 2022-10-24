@@ -6,17 +6,16 @@
 import logging
 from docopt import docopt
 import more_itertools
-import re
 
 # Local imports
 from translation_google import get_google_translation
-from spacy_utils import get_pronoun_on_sentence, get_pobj, get_only_subject_sentence,  get_people, get_nlp_en, display_with_pd, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, has_gender_in_source, get_noun_chunks
-from generate_model_translation import get_best_translation, generate_translation_with_constrained, generate_translation_with_gender_constrained, generate_translation, get_constrained_translation_one_subject, get_contrained_translation
+from spacy_utils import get_pronoun_on_sentence, get_pobj, get_only_subject_sentence, get_people, get_nlp_en, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, has_gender_in_source, get_noun_chunks
+from generate_model_translation import generate_translation_with_constrained, generate_translation_with_gender_constrained, generate_translation, get_constrained_translation_one_subject
 from gender_inflection import get_just_possible_words, format_sentence_inflections
-from constrained_beam_search import get_constrained_sentence, split_sentences_by_nsubj, split_sentence_same_subj, get_constrained, get_constrained_gender
-from generate_neutral import make_neutral_with_pronoun, make_neutral_with_constrained, make_neutral
+from constrained_beam_search import  get_constrained, get_constrained_translation, combine_contrained_translations, split_sentences_by_nsubj, split_on_subj_and_bsubj
+from generate_neutral import make_neutral_with_constrained, make_neutral
 from roberta import get_disambiguate_pronoun
-from format_translations import format_sentence, get_format_translation, format_multiple_sentence, should_remove_first_word, format_with_dot
+from format_translations import format_sentence, format_multiple_sentence, should_remove_first_word, format_translations_subjs
 from word_alignment import get_word_alignment_pairs
 
 def translate(source_sentence):
@@ -29,10 +28,10 @@ def translate(source_sentence):
     gender = get_sentence_gender(source_sentence)
     pobj_list = get_pobj(source_sentence)
         
-    print("subjects, pronoun, gender", subjects, pronoun_list, gender)
+    # print("subjects, pronoun, gender", subjects, pronoun_list, gender)
 
-    for token in source_sentence:
-        print("---->", token, " | ", token.pos_, " | ", token.dep_, " | ", token.head)
+    # for token in source_sentence:
+    #     print("---->", token, " | ", token.pos_, " | ", token.dep_, " | ", token.head)
 
     is_all_same_pronoun = is_all_equal(pronoun_list)
     is_all_same_subject = is_all_equal(subjects)
@@ -66,12 +65,20 @@ def translate(source_sentence):
         google_trans = get_google_translation(source_sentence.text_with_ws)
         return {"google_translation": google_trans}    
 
+
+### METHODS
+def is_all_equal(list):
+    return all(i.text == list[0].text for i in list)
+
+def is_neutral(pronoun_list):
+    return len(pronoun_list) == 0 or all("I" == elem.text for elem in pronoun_list) or all("they" == elem.text for elem in pronoun_list)
+
 def generate_translation_for_one_subj_neutral(source_sentence):
     # translation_nlp = get_nlp_pt("ele é um ótimo enfermeiro.")
     translation_nlp = get_google_translation(source_sentence.text_with_ws)        
     
     people = get_people(translation_nlp)
-    constrained_splitted = test_constrained(translation_nlp, people)
+    constrained_splitted = get_constrained_translation(translation_nlp, people)
 
     if len(constrained_splitted) == 0:
         return generate_neutral_translation(translation_nlp)
@@ -91,6 +98,7 @@ def generate_translation_for_one_subj_neutral(source_sentence):
     first_sentence, second_sentence, third_sentence = format_sentence_inflections(possible_words)
 
     return {"first_option": first_sentence, "second_option": second_sentence, "neutral": third_sentence}
+
 
 def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
     translation_nlp = get_google_translation(source_sentence.text_with_ws)
@@ -155,140 +163,7 @@ def get_gender_translations(subjects, source_sentence, translation_constrained, 
 
         first_sentence, second_sentence, third_sentence = format_translations_subjs(index_to_replace, translation, inflections)
         
-        return {"first_option": first_sentence, "second_option": second_sentence, "neutral": third_sentence}
-
-        
-def format_translations_subjs(index_to_replace, sentence, inflections):
-    translations = []
-    for id, index in enumerate(index_to_replace):
-        new_sentence = ""
-        cont = 0
-        for index, word in enumerate(sentence):
-            if index not in index_to_replace:
-                new_sentence += word.text + " "
-            else:
-                new_sentence += inflections[cont][id] + " "
-                cont = cont + 1
-        
-        translations.append(new_sentence.strip())
-
-    return translations       
-            
-
-def combine_contrained_translations(translations, constrained_splitted, source_sentence, matching_methods = "i", align = "itermax"):
-    first_translation, second_translation = translations
-    word_alignments = get_word_alignment_pairs(first_translation.strip("."), second_translation.strip("."), matching_methods=matching_methods, align=align)
-    new_sentence = ""
-    for first_sentence, second_sentence in word_alignments:
-        last_word = new_sentence.strip().split(" ")[-1]
-
-        if first_sentence == second_sentence and first_sentence != last_word:
-            new_sentence += first_sentence + " "
-
-        elif any(first_sentence in word for word in constrained_splitted) and first_sentence != last_word:
-            new_sentence += first_sentence + " "
-        
-        elif any(second_sentence in word for word in constrained_splitted) and second_sentence != last_word:
-            new_sentence += second_sentence + " "  
-        
-        elif first_sentence != second_sentence and first_sentence != last_word:
-            first_token = get_nlp_pt(first_sentence)[0]
-            second_token = get_nlp_pt(second_sentence)[0]
-
-            if first_token.lemma_ == second_token.lemma_ or first_token.text[:-1] == second_token.text:
-                new_sentence += first_sentence + " "
-            
-    
-    if len(new_sentence.strip().split(' ')) < len(word_alignments):
-        model_translation = get_best_translation(source_sentence.text_with_ws)
-        model_alignment = get_word_alignment_pairs(model_translation.strip("."), new_sentence, matching_methods="m", align="mwmf")
-        return align_with_model(model_alignment, new_sentence)
-    
-
-    return new_sentence.strip() + "."
-
-def align_with_model(model_alignment, new_sentence):
-    new_sentence_model = ""
-
-    for model_sentence, alignment_sentence in model_alignment:
-        last_word = new_sentence_model.strip().split(" ")[-1]
-        
-        if model_sentence != alignment_sentence and model_sentence != last_word:
-            token_model = get_nlp_pt(model_sentence)[0]
-            token_alignment = get_nlp_pt(alignment_sentence)[0]
-            
-            if token_model.pos_ != token_alignment.pos_:
-                new_sentence_model += model_sentence + " "
-                
-            
-        if model_sentence == alignment_sentence:
-            new_sentence_model += new_sentence.strip() + "."
-            return new_sentence_model
-    
-    return new_sentence_model.strip() + "."
-
-
-
-def split_on_subj_and_bsubj(sentence, people):
-    sentence_splitted = []
-    new_sent = ""   
-    
-    for token in sentence:
-        if token not in people and token.pos_ != "DET":
-            new_sent += token.text_with_ws
-        elif token.pos_ == "DET" and token.head not in people:
-            new_sent += token.text_with_ws
-             
-        if token.is_sent_end or token in people:
-            if len(new_sent) > 0:
-                sentence_splitted.append(new_sent.strip())
-
-            new_sent = ""
-                       
-    return sentence_splitted      
-
-
-def test_constrained(translation, people):
-    constrained_sentence = ""
-    list_constrained = []
-
-    for token in translation:
-        ancestors = [ancestor for ancestor in token.ancestors]
-        children = [child for child in token.children]
-
-        if not any(item in ancestors for item in people) and not any(item in children for item in people) and token not in people:
-            if token.pos_ != "PUNCT" or len(constrained_sentence) > 0:
-                constrained_sentence += token.text_with_ws
-        
-        elif token.text.lower() != 'eu' and len(constrained_sentence) > 0:
-            list_constrained.append(constrained_sentence.strip())
-            constrained_sentence = ""
-
-        if token.is_sent_end and len(constrained_sentence) > 0:
-            list_constrained.append(constrained_sentence.strip())
-    
-    if len(list_constrained) == 1 and len(translation.text_with_ws) == len(list_constrained[0]):
-        return ""
-
-    return list_constrained
-
-
-    # TODO checar se o genero ta certo de quem she se refere (roberta ingles e roberta portugues?)
-    # gerar as 3 traduções para quem deveria ser neutro   
-
-
-# def get_google_translation(source_sentence):
-#     if source_sentence.startswith("The") and source_sentence.endswith("designer"):
-#         return get_nlp_pt("O desenvolvedor discutiu com o designer")
-#     elif source_sentence.startswith("because") and source_sentence.endswith("design"):    
-#         get_nlp_pt("porque ela não gostou do desenho.")
-#     return get_nlp_pt("A desenvolvedora discutiu com a designer, porque ela não gostou do design.")
-
-def is_all_equal(list):
-    return all(i.text == list[0].text for i in list)
-
-def is_neutral(pronoun_list):
-    return len(pronoun_list) == 0 or all("I" == elem.text for elem in pronoun_list) or all("they" == elem.text for elem in pronoun_list)
+        return {"first_option": first_sentence, "second_option": second_sentence, "neutral": third_sentence}        
 
 def get_translation_for_one_word(source_sentence):
     try:
@@ -316,18 +191,10 @@ def generate_translation_for_one_subj(source_sentence):
 
             return {"more_likely": more_likely,"less_likely": less_likely ,"neutral": neutral.capitalize()}
 
-        # splitted_google_trans = split_sentence_same_subj(translation_google)
-        # print("splitted_google_trans: ", splitted_google_trans)
-
-        # splitted_source = split_sentence_same_subj(source_sentence)
-        # print("splitted_source: ", splitted_source)
-
-        # constrained_sentence = get_constrained(source_sentence)  
-        # print("constrained_sentence: ", constrained_sentence)
         
-        constrained_splitted = test_constrained(translation_google, [subject])
-        
+        constrained_splitted = get_constrained_translation(translation_google, [subject])        
         translations = []
+
         for constrained in constrained_splitted:
             constrained_translation = generate_translation_with_constrained(source_sentence.text_with_ws, constrained)
             translations.append(constrained_translation)
@@ -341,24 +208,6 @@ def generate_translation_for_one_subj(source_sentence):
 
         return {"translation": translation_constrained, "neutral": neutral.capitalize()}
 
-        # if len(constrained_sentence) == 0:
-        #     print("ENTROU 1")
-        #     best_translation = get_best_translation(source_sentence.text_with_ws)
-        #     print("best_translation:", best_translation)
-        #     neutral = make_neutral(best_translation)
-
-        #     return str(translation_google), best_translation, neutral
-        
-        # elif len(splitted_google_trans) == 1:
-        #     print("ENTROU 2")
-        #     more_likely, less_likely = get_constrained_translation_one_subject(
-        #         source_sentence, constrained_sentence)
-        #     neutral = make_neutral_with_constrained(more_likely, constrained_sentence)
-            
-        #     return more_likely, less_likely, neutral
-        # else:
-        #     print("ENTROU 3")
-        #     return generate_multiple_sentence_translation(splitted_google_trans, subject, splitted_source);
     except:
         return "An error occurred translating for one subject"
 
@@ -372,29 +221,7 @@ def generate_translation_with_subject_and_neutral(source_sentence):
         return {"first_option": translation[0], "second_option": translation[1], "neutral": neutral}
     except:
         return "An error occurred translating for one subject without pronoun"  
-
-def generate_multiple_sentence_translation(splitted_google_trans, subject, splitted_source):
-    try:
-        possible_sentences = []
-        for index, sentence in enumerate(splitted_google_trans):
-            sentence_translated = get_nlp_pt(sentence)
-            gender = get_sentence_gender(sentence_translated)
-
-            if len(gender) > 0:
-                constrained_sentence = get_constrained_sentence(sentence_translated, subject)  
-                more_likely, less_likely = get_constrained_translation_one_subject(splitted_source[index], constrained_sentence)
-                neutral = make_neutral_with_pronoun(more_likely)
-                possible_sentences.append([more_likely, less_likely, neutral])
-            else:
-                possible_sentences.append([sentence])
-
-        
-        formatted = format_multiple_sentence(possible_sentences)         
-
-        return formatted[0], formatted[1], formatted[2] 
-    except:
-        return "An error occurred translating multiple sentence"    
-
+ 
 def generate_neutral_translation(translation):
     try:
         possible_words = get_just_possible_words(translation)
@@ -488,16 +315,14 @@ def generate_translation_more_subjects(source_sentence, subjects):
 
 def generate_translation_it(source_sentence):
     try:
-        # google_trans = get_google_translation(source_sentence.text_with_ws)
-        google_trans = get_nlp_pt("O troféu não cabia na mala marrom porque era muito grande.")
+        google_trans = get_google_translation(source_sentence.text_with_ws)
+        # google_trans = get_nlp_pt("O troféu não cabia na mala marrom porque era muito grande.")
         it_token = get_nlp_pt("it")
         subj_roberta = get_disambiguate_pronoun(source_sentence, it_token)
-        print("SUBJ ROBERTA:", subj_roberta)
 
         google_trans = get_nlp_pt(google_trans)
 
         sentence_splitted_source = format_sentence(source_sentence)
-        print("sentence_splitted_source:", sentence_splitted_source)
 
         index_it = 0
         index_without_it = 0
