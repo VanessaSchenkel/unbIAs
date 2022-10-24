@@ -28,6 +28,7 @@ def translate_text(text):
 
 def get_google_translation(source_sentence):
     translation = translate_text(source_sentence) 
+    print("TRANSLATION:", translation)
     translation = translation + '.' if not translation.endswith('.') else translation
     sentence_formatted = check_I(source_sentence, translation) 
 

@@ -9,7 +9,7 @@ import more_itertools
 
 # Local imports
 from translation_google import get_google_translation
-from spacy_utils import get_pronoun_on_sentence, get_pobj, get_only_subject_sentence, get_people, get_nlp_en, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, has_gender_in_source, get_noun_chunks
+from spacy_utils import get_pronoun_on_sentence, get_pobj, is_plural, get_only_subject_sentence, get_people, get_nlp_en, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, has_gender_in_source, get_noun_chunks
 from generate_model_translation import generate_translation_with_constrained, generate_translation_with_gender_constrained, generate_translation, get_constrained_translation_one_subject
 from gender_inflection import get_just_possible_words, format_sentence_inflections
 from constrained_beam_search import  get_constrained, get_constrained_translation, combine_contrained_translations, split_sentences_by_nsubj, split_on_subj_and_bsubj
@@ -171,8 +171,18 @@ def get_translation_for_one_word(source_sentence):
         formatted =  translation.rstrip(".")
 
         formatted_translation = get_nlp_pt(formatted)
+        
+        source = get_nlp_en(source_sentence)
+        is_source_plural = is_plural(source)
+        is_translation_plural = is_plural(formatted_translation)
+
+
+        if is_source_plural != is_translation_plural:
+            formatted_translation = get_google_translation(source_sentence)
+        
         possible_words = get_just_possible_words(formatted_translation)[0]
         possible_words_formatted = [word.capitalize() for word in possible_words]
+
         return {'possible_words': possible_words_formatted}    
     except:
         return "An error occurred translating one word"

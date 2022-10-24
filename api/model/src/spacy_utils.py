@@ -15,14 +15,12 @@ nlp_en = spacy.load("en_core_web_lg")
 def get_nlp_en(sentence):
     return nlp_en(sentence)
 
-
 def get_nlp_pt(sentence):
     return nlp(sentence)
 
 def has_gender_in_source(sentence):
     sentence_nlp = get_nlp_en(sentence)
     return len(get_sentence_gender(sentence_nlp)) > 0
-
 
 def get_pronoun_on_sentence(sentence):
     pronoun_list = []
@@ -67,6 +65,10 @@ def get_sentence_gender(sentence):
 
     return gender_list
 
+def is_plural(word):
+    for token in word:
+        number = token.morph.get("Number")
+        return "Plur" in number 
 
 def get_word_pos_and_morph(word):
     for token in word:
@@ -165,5 +167,7 @@ if __name__ == "__main__":
     print("------------------------")
     noun = get_noun_chunks(sentence)
     print(noun)
+    print("-------------------------")
+    print("Is plural:", is_plural(sentence_fn))
 
     logging.info("DONE")
