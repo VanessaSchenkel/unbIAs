@@ -488,11 +488,17 @@ def generate_translation_more_subjects(source_sentence, subjects):
 
 def generate_translation_it(source_sentence):
     try:
-        google_trans = get_google_translation(source_sentence.text_with_ws)
-        subj_roberta = get_disambiguate_pronoun(source_sentence, "it")
+        # google_trans = get_google_translation(source_sentence.text_with_ws)
+        google_trans = get_nlp_pt("O troféu não cabia na mala marrom porque era muito grande.")
+        it_token = get_nlp_pt("it")
+        subj_roberta = get_disambiguate_pronoun(source_sentence, it_token)
+        print("SUBJ ROBERTA:", subj_roberta)
+
         google_trans = get_nlp_pt(google_trans)
 
         sentence_splitted_source = format_sentence(source_sentence)
+        print("sentence_splitted_source:", sentence_splitted_source)
+
         index_it = 0
         index_without_it = 0
         for index, sentence in enumerate(sentence_splitted_source):
