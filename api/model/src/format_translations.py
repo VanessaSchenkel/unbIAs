@@ -1,10 +1,3 @@
-"""Usage:
-    format_translations.py --first=SENTENCE --second=SENTENCE [--debug]
-"""
-
-# External imports
-import logging
-from docopt import docopt
 import itertools
 import re
 
@@ -28,7 +21,6 @@ def get_format_translation(translation, regex = r".,", subst = ","):
 
 def format_with_dot(translation):
     sentence = get_nlp_pt(translation)
-    print("SENTENCE:", sentence)
     new_sentence = ""
     for token in sentence:
         if token.text == "." and token.i != len(sentence)-1:
@@ -62,23 +54,3 @@ def should_remove_first_word(sentence):
     for token in sent:
         return (token.pos_ == "CCONJ" or token.is_punct) and token.i == 0
 
-
-if __name__ == "__main__":
-    # Parse command line arguments
-    args = docopt(__doc__)
-    first = args["--first"]
-    second = args["--second"]
-    debug = args["--debug"]
-
-    if debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
-
-
-    first = format_with_dot(first)
-    second = format_with_dot(second)
-    print(first)
-    print(second)
-
-    logging.info("DONE")

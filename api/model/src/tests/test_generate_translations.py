@@ -49,17 +49,15 @@ def test_translate_she():
     sentence = "She is a good doctor."
     translation = translate(sentence)
     
-    assert translation['more_likely'] == 'Ela é uma boa médica.'
-    assert translation['less_likely'] == 'Ela é um bom médico.'
-    assert translation['neutral'] == 'El[x] é um[x] bom médic[x].'   
+    assert translation['translation'] == 'Ela é uma boa médica.'
+    assert translation['neutral'] == 'El[x] é um[x] bo[x] médic[x].'   
 
 def test_translate_he():
     sentence = "He is a great nurse."
     translation = translate(sentence)
 
     assert translation['more_likely'] == 'Ele é um ótimo enfermeiro.'
-    assert translation['less_likely'] == 'É um grande enfermeiro.'
-    assert translation['neutral'] == 'É um[x] grande enfermeir[x].'     
+    assert translation['neutral'] == 'É um[x] ótimo enfermeir[x].'     
 
 def test_translate_two_subj_one_pronoun():
     sentence = "The developer argued with the designer because she did not like the design."
@@ -68,6 +66,13 @@ def test_translate_two_subj_one_pronoun():
     assert translation['first_option'] == 'A desenvolvedora discutiu com o designer porque ela não gostou do design.'
     assert translation['second_option'] == 'A desenvolvedora discutiu com a designer porque ela não gostou do design.'
     assert translation['neutral'] == 'A desenvolvedora discutiu com [x] designer porque ela não gostou do design.'    
+
+def test_translate_more_than_one_gender():
+    sentence = "The doctor finished her work but the nurse was still eating his lunch"
+    translation = translate(sentence)
+
+    assert translation['translation'] == 'A médica terminou seu trabalho mas o enfermeiro ainda estava almoçando.'
+    assert translation['neutral'] == '[x] médic[x] terminou seu trabalho mas [x] enfermeir[x] ainda estava almoçando.'
 
 # def test_translate_with_it():
 #     sentence = "The trophy would not fit in the brown suitcase because it was too big."
