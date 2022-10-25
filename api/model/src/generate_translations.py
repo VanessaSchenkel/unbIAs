@@ -168,21 +168,27 @@ def get_gender_translations(subjects, source_sentence, translation_constrained, 
 def get_translation_for_one_word(source_sentence):
     try:
         translation = generate_translation(source_sentence)
+        print(translation)
         formatted =  translation.rstrip(".")
-
+        print("formatted:",formatted)
         formatted_translation = get_nlp_pt(formatted)
-        
+        print("formatted_translation:",formatted_translation)
         source = get_nlp_en(source_sentence)
+        print("source:", source)
         is_source_plural = is_plural(source)
+        print("is_source_plural:", is_source_plural)
         is_translation_plural = is_plural(formatted_translation)
-
+        print("is_translation_plural:", is_translation_plural)
 
         if is_source_plural != is_translation_plural:
             formatted_translation = get_google_translation(source_sentence)
         
         possible_words = get_just_possible_words(formatted_translation)[0]
+        print("possible_words:", possible_words)
+        
         possible_words_formatted = [word.capitalize() for word in possible_words]
 
+        print("possible_words_formatted:",  possible_words_formatted)
         return {'possible_words': possible_words_formatted}    
     except:
         return "An error occurred translating one word"

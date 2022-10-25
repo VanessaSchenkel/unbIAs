@@ -27,7 +27,6 @@ def get_gender_inflections(word: str):
         text = text.rstrip("s")
 
     matches = get_matches(text, pos)
-    
     if matches is None:
         return "No matches"
 
@@ -61,7 +60,7 @@ def get_gender_inflections(word: str):
 
 
 def get_matches(text, pos):
-    with open('./data/pt-inflections-ordered.csv', newline='') as users_csv:
+    with open('./model/src/data/pt-inflections-ordered.csv', newline='') as users_csv:
         user_reader = csv.DictReader(users_csv)
         for row in user_reader:
             if row['word'] == text and pos in row['pos'].upper():
@@ -111,7 +110,6 @@ def get_just_possible_words(translation):
                     forms.append(inflections['word'])
 
             forms_list.append(forms)
-    
     return forms_list
 
 

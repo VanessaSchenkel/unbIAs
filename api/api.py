@@ -1,6 +1,9 @@
 import time
-from model.src.generate_translations import translate
-from flask import Flask, request
+from flask import Flask, request, jsonify
+import sys
+
+sys.path.insert(1, './model/src')
+from generate_translations import translate
 
 app = Flask(__name__)
 
@@ -14,8 +17,9 @@ def json_example():
     request_data = request.get_json()
     print(request_data)
     try:
-        translate(request_data['source_sentence'])
-        return {"translation": "OK"}
+        translations = translate(request_data['source_sentence'].lower())
+        print("TRANSLATIONS:", translations)
+        return jsonify(translations)
     except:
         return "An error occurred translating sentences :("    
     
