@@ -5,7 +5,9 @@ import sys
 sys.path.insert(1, './model/src')
 from generate_translations import translate
 
+
 app = Flask(__name__)
+app.config['JSON_SORT_KEYS'] = False
 
 @app.route('/time')
 def get_current_time():
@@ -21,6 +23,7 @@ def json_example():
         print("TRANSLATIONS:", translations)
         return jsonify(translations)
     except:
-        return "An error occurred translating sentences :("    
+        error = {"error": "An error occurred translating sentences :("}
+        return jsonify(error)  
     
     

@@ -5,13 +5,28 @@ from spacy_utils import get_nlp_pt, get_nlp_en
 def format_sentence(sentence):
     new_sentence = ""
     for token in sentence:
-        if "CONJ" in token.pos_:          
+        if "CONJ" in token.pos_ or "PUNCT" in token.pos_:          
             new_sentence = new_sentence.strip() + "###" + token.text_with_ws
         else:
             new_sentence += token.text_with_ws
 
     splitted = new_sentence.split("###")
     return splitted  
+
+def format_sentence_more_than_one(sentence):
+    new_sentence = ""
+    for token in sentence:
+        if "CONJ" in token.pos_:          
+            new_sentence = new_sentence.strip() + " ### " + token.text_with_ws
+        elif "PUNCT" in token.pos_:
+            new_sentence = new_sentence.strip() + " --- " + token.text_with_ws
+        else:
+            new_sentence += token.text_with_ws
+
+    splitted = new_sentence.split(" ### ")
+    splitted_formatted = [word.replace(" --- ", "") for word in splitted]
+
+    return splitted_formatted
 
 def format_with_dot(translation):
     sentence = get_nlp_pt(translation)
@@ -47,6 +62,11 @@ def should_remove_first_word(sentence):
     sent = get_nlp_en(sentence)
     for token in sent:
         return (token.pos_ == "CCONJ" or token.is_punct) and token.i == 0
+
+def should_remove_last_word(sentence):
+    sent = get_nlp_en(sentence)
+    for token in sent:
+        return (token.pos_ == "CCONJ" or token.is_punct) and token.is_sent_end
 
 def format_translations_subjs(index_to_replace, sentence, inflections):
     translations = []

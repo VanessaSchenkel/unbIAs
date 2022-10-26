@@ -15,7 +15,7 @@ from gender_inflection import get_just_possible_words, format_sentence_inflectio
 from constrained_beam_search import  get_constrained, get_constrained_translation, combine_contrained_translations, split_sentences_by_nsubj, split_on_subj_and_bsubj
 from generate_neutral import make_neutral_with_constrained, make_neutral
 from roberta import get_disambiguate_pronoun
-from format_translations import format_sentence, format_multiple_sentence, should_remove_first_word, format_translations_subjs
+from format_translations import format_sentence, format_multiple_sentence, format_sentence_more_than_one, should_remove_first_word, format_translations_subjs, should_remove_last_word
 from word_alignment import get_word_alignment_pairs
 
 def translate(source_sentence):
@@ -166,32 +166,24 @@ def get_gender_translations(subjects, source_sentence, translation_constrained, 
         return {"first_option": first_sentence, "second_option": second_sentence, "neutral": third_sentence}        
 
 def get_translation_for_one_word(source_sentence):
-    try:
+    # try:
         translation = generate_translation(source_sentence)
-        print(translation)
         formatted =  translation.rstrip(".")
-        print("formatted:",formatted)
         formatted_translation = get_nlp_pt(formatted)
-        print("formatted_translation:",formatted_translation)
         source = get_nlp_en(source_sentence)
-        print("source:", source)
         is_source_plural = is_plural(source)
-        print("is_source_plural:", is_source_plural)
         is_translation_plural = is_plural(formatted_translation)
-        print("is_translation_plural:", is_translation_plural)
 
         if is_source_plural != is_translation_plural:
             formatted_translation = get_google_translation(source_sentence)
         
         possible_words = get_just_possible_words(formatted_translation)[0]
-        print("possible_words:", possible_words)
-        
+
         possible_words_formatted = [word.capitalize() for word in possible_words]
 
-        print("possible_words_formatted:",  possible_words_formatted)
         return {'possible_words': possible_words_formatted}    
-    except:
-        return "An error occurred translating one word"
+    # except:
+    #     return "An error occurred translating one word"
 
 def generate_translation_for_one_subj(source_sentence):
     try:
@@ -199,9 +191,10 @@ def generate_translation_for_one_subj(source_sentence):
         # translation_google =  get_nlp_pt("Ela é uma boa médica.") 
 
         subject = get_only_subject_sentence(translation_google)
-
+        print("SUBJECT", subject, subject.pos_)
         if subject.pos_ == 'NOUN':
-            constrained_sentence = get_constrained(source_sentence)  
+            constrained_sentence = get_constrained(source_sentence) 
+            print("CONSTRAINED:", constrained_sentence) 
             more_likely, less_likely = get_constrained_translation_one_subject(source_sentence.text_with_ws, constrained_sentence)
             neutral = make_neutral_with_constrained(more_likely, constrained_sentence)
 
@@ -252,36 +245,51 @@ def generate_translation_for_sentence_without_pronoun_and_gender(source_sentence
         translation = generate_translation(source_sentence.text_with_ws)
         translation = get_nlp_pt(translation)
         possible_words = get_just_possible_words(translation)
-        sentences = format_sentence_inflections(possible_words)
-    
-        return sentences
+        first_option, second_option, neutral = format_sentence_inflections(possible_words)
+        
+        return {"first_option": first_option, "second_option": second_option, "neutral": neutral}
     except:
         return "An error occurred translating sentence without pronoun and gender"    
  
 
 def generate_translation_for_more_than_one_gender(source_sentence):
     try:
-        sentences = format_sentence(source_sentence)
+        sentences = format_sentence_more_than_one(source_sentence)
+        print("sentences:", sentences)
         translations_more_likely = []
         translations_neutral = []
+
         for sentence in sentences:
-            
+            print("sentence:", sentence)
             should_remove_first = should_remove_first_word(sentence)
-            
+            print("should remove:", should_remove_first)
+            should_remove_last = should_remove_last_word(sentence[-1])
+            print("should remove last:", should_remove_last)
             sentence_to_translate = ""
             word_to_add = ""
+            word_to_add_last = ""
             if should_remove_first:
                 sentence_to_translate =  sentence.strip().split(' ', 1)[1]
+                print("sentence to translate", sentence_to_translate)
                 first_word = sentence.strip().split(' ', 1)[0]
+                print("first_word", first_word)
                 word_to_add = get_word_to_add(first_word) + " "
+                print("word_to_add", word_to_add)
+            elif should_remove_last:
+                sentence_to_translate =  sentence.strip()[:-1]
+                print("sentence to translate", sentence_to_translate)
+                last_word = sentence.strip().split(' ', 1)[-1]
+                print("last_word", last_word)
+                word_to_add_last = get_word_to_add(last_word)
+                print("word_to_add_last", word_to_add_last)
             else:
                 sentence_to_translate = sentence
             
             sentence_to_translate += "."
             sent = get_nlp_en(sentence_to_translate)
             translations = generate_translation_for_one_subj(sent)
-            more_likely = word_to_add + translations['more_likely']
-            neutral = word_to_add + translations['neutral']
+            more_likely = word_to_add + translations['more_likely'] + word_to_add_last
+            neutral = word_to_add + translations['neutral'] + word_to_add_last
             translations_more_likely.append(more_likely)
             translations_neutral.append(neutral)
 

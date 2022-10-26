@@ -7,14 +7,20 @@
 import logging
 from docopt import docopt
 from spacy_utils import get_nlp_pt
+import six
+from google.cloud import translate_v2 as translate
+
+translate_client = translate.Client()
 
 def translate_text(text):
     """Translates text into the target language.
     """
-    import six
-    from google.cloud import translate_v2 as translate
+    
 
-    translate_client = translate.Client()
+    print("aquiiiii")
+    
+
+    print("translate_client:", translate_client)
 
     if isinstance(text, six.binary_type):
         text = text.decode("utf-8")
@@ -22,11 +28,12 @@ def translate_text(text):
     # Text can also be a sequence of strings, in which case this method
     # will return a sequence of results for each text.
     result = translate_client.translate(text, source_language="en", target_language="pt-BR")
-
+    print("result:", result)
     return result["translatedText"]
 
 
 def get_google_translation(source_sentence):
+    print("source:", source_sentence)
     translation = translate_text(source_sentence) 
     print("TRANSLATION:", translation)
     translation = translation + '.' if not translation.endswith('.') else translation

@@ -102,7 +102,8 @@ def split_on_subj_and_bsubj(sentence, people):
 def get_constrained(source_sentence):
     # source_nlp = get_nlp_en(source_sentence)
     pronoun = get_pronoun_on_sentence(source_sentence)
-    
+    print("------")
+    print("pronoun:", pronoun)
     if len(pronoun) == 0:
         return ""
     
@@ -174,8 +175,10 @@ def split_sentence_same_subj(sentence):
 
 def generate_translation_for_roberta_nsubj(subject):
     translation = generate_translation(subject)
+    print("translation:", translation)
     translation = get_nlp_pt(translation)
     possible_words = get_just_possible_words(translation)
+    print("possible_words:", possible_words)
     
     combined = [j for i in zip(*possible_words) for j in i]
 
