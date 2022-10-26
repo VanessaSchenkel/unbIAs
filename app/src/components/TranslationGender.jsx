@@ -1,25 +1,61 @@
+import { useState } from "react";
+import { useEffect } from "react";
 import copyImg from "../assets/copy.svg";
 
 const TranslationGender = ({ translations, optionNeutral }) => {
-  const titles = ["Tradução: ", "Neutro: "];
+  const [titles, setTitles] = useState([]);
+  const [data, setData] = useState({});
+
+  useEffect(() => {
+    if (translations) {
+      setData(translations);
+    }
+  }, [translations]);
 
   const formatNeutral = (translation) => {
-    const word = translation.replace("[x]", optionNeutral["label"]);
+    if (translation) {
+      return translation.replaceAll("[x]", optionNeutral["label"]);
+    }
+    return "";
+  };
 
-    return word;
+  useEffect(() => {
+    if (data) {
+      getLabels();
+    }
+  }, [data]);
+
+  const getLabels = () => {
+    let labels = [];
+
+    Object.keys(translations).forEach((key) => {
+      if (key === "first_option") {
+        labels.push("Primeira opção: ");
+      } else if (key === "second_option") {
+        labels.push("Segunda opção: ");
+      } else if (key === "neutral") {
+        labels.push("Neutro: ");
+      } else if (key === "translation") {
+        labels.push("Tradução: ");
+      } else if (key === "more_likely") {
+        labels.push("Mais provável: ");
+      } else if (key === "less_likely") {
+        labels.push("Menos provável: ");
+      }
+
+      setTitles(labels);
+    });
   };
 
   function copyRoomCodeToClipboard(translation) {
     navigator.clipboard.writeText(translation);
   }
 
-  console.log(Object.keys(translations).map((i) => i));
   return (
     <div className='traducao'>
       <div className='title'>Traduções:</div>
-      {Object.values(translations)
-        .reverse()
-        .map((translation, index) => {
+      {data &&
+        Object.values(data)?.map((translation, index) => {
           return (
             <>
               <div className='textarea-container'>

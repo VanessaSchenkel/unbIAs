@@ -5,12 +5,14 @@ import Select from "react-select";
 import PossibleWords from "../components/PossibleWords";
 import TranslationGender from "../components/TranslationGender";
 import "../styles/home.css";
+import { Error } from "./Error";
 
 export function Home() {
   const [newTextToTranslate, setNewTextToTranslate] = useState("");
   const [newTranslation, setNewTranslation] = useState("");
   const [shouldShowPossibleWords, setShouldShowPossibleWords] = useState(false);
   const [shouldShowTranslation, setShouldShowTranslation] = useState(false);
+  const [shouldShowError, setShouldShowError] = useState(false);
   const [spinner, setSpinner] = useState(false);
   const [optionNeutral, setOptionNeutral] = useState({
     value: "x",
@@ -28,6 +30,8 @@ export function Home() {
     event.preventDefault();
     setSpinner(true);
 
+    // setNewTranslation({ possible_words: ["Cão", "Cadela", "Cã[x]"] });
+
     if (newTextToTranslate.trim().length > 0) {
       const requestOptions = {
         method: "POST",
@@ -38,13 +42,11 @@ export function Home() {
       fetch("/translate", requestOptions)
         .then((response) => response.json())
         .then((data) => setNewTranslation(data))
-        .then((data) => setSpinner(false));
-      // }
-      // const trans = {
-      //   neutral: "El[x] \u00e9 um[x] \u00f3tim[x] enfermeir[x].",
-      //   translation: "Ele \u00e9 um \u00f3timo enfermeiro.",
-      // };
-      // setNewTranslation(trans);
+        .then((data) => setSpinner(false))
+        .catch((err) => {
+          console.log(err);
+          setShouldShowError(true);
+        });
     }
   };
 
@@ -52,9 +54,19 @@ export function Home() {
     console.log("NEW TRANSLATION:", newTranslation);
     if (newTranslation) {
       const translation = newTranslation;
-      if (translation.hasOwnProperty("possible_words")) {
+      if (translation.hasOwnProperty("error")) {
+        setShouldShowError(true);
+        setShouldShowTranslation(false);
+        setShouldShowPossibleWords(false);
+      } else if (translation.hasOwnProperty("possible_words")) {
+        console.log("entrou possible words");
+        setShouldShowError(false);
+        setShouldShowTranslation(false);
         setShouldShowPossibleWords(true);
-      } else if (translation.hasOwnProperty("translation")) {
+      } else {
+        console.log("entrou else");
+        setShouldShowError(false);
+        setShouldShowPossibleWords(false);
         setShouldShowTranslation(true);
       }
     }
@@ -64,6 +76,7 @@ export function Home() {
     <>
       <div id='home'>
         <div className='to-translate'>
+          {shouldShowError && <Error />}
           <div className='title'>Texto para traduzir:</div>
           <form onSubmit={handleSendQuestion}>
             <textarea
