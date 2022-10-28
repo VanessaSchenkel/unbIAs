@@ -4,15 +4,15 @@ import PacmanLoader from "react-spinners/PacmanLoader";
 import Select from "react-select";
 import PossibleWords from "../components/PossibleWords";
 import TranslationGender from "../components/TranslationGender";
+import { useNavigate } from "react-router-dom";
 import "../styles/home.css";
-import { Error } from "./Error";
 
 export function Home() {
+  const navigate = useNavigate();
   const [newTextToTranslate, setNewTextToTranslate] = useState("");
   const [newTranslation, setNewTranslation] = useState("");
   const [shouldShowPossibleWords, setShouldShowPossibleWords] = useState(false);
   const [shouldShowTranslation, setShouldShowTranslation] = useState(false);
-  const [shouldShowError, setShouldShowError] = useState(false);
   const [spinner, setSpinner] = useState(false);
   const [optionNeutral, setOptionNeutral] = useState({
     value: "x",
@@ -45,7 +45,8 @@ export function Home() {
         .then((data) => setSpinner(false))
         .catch((err) => {
           console.log(err);
-          setShouldShowError(true);
+          setSpinner(false);
+          navigate("/error");
         });
     }
   };
@@ -55,17 +56,15 @@ export function Home() {
     if (newTranslation) {
       const translation = newTranslation;
       if (translation.hasOwnProperty("error")) {
-        setShouldShowError(true);
+        navigate("/error");
         setShouldShowTranslation(false);
         setShouldShowPossibleWords(false);
       } else if (translation.hasOwnProperty("possible_words")) {
         console.log("entrou possible words");
-        setShouldShowError(false);
         setShouldShowTranslation(false);
         setShouldShowPossibleWords(true);
       } else {
         console.log("entrou else");
-        setShouldShowError(false);
         setShouldShowPossibleWords(false);
         setShouldShowTranslation(true);
       }
@@ -76,7 +75,6 @@ export function Home() {
     <>
       <div id='home'>
         <div className='to-translate'>
-          {shouldShowError && <Error />}
           <div className='title'>Texto para traduzir:</div>
           <form onSubmit={handleSendQuestion}>
             <textarea
@@ -113,6 +111,7 @@ export function Home() {
           />
         )}
       </div>
+      )
       {spinner && (
         <div className='loader'>
           <PacmanLoader color='#E83F6F' margin={10} size={50} />

@@ -79,3 +79,12 @@ def test_translate_with_it():
     translation = translate(sentence)
     
     assert translation['translation_it'] == 'O troféu não cabia na mala marrom porque era muito grande.'
+
+def test_translation_guard():
+    sentence = "The guard hated the hairdresser because she charged too much."
+    translation = translate(sentence)
+    
+    assert translation['first_option'] == 'A guarda odiava o cabeleireiro porque ela cobrava demais.'
+    assert translation['second_option'] == 'A guarda odiava a cabeleireira porque ela cobrava demais.'
+    assert translation['neutral'] == 'A guarda odiava [x] cabeleireir[x] porque ela cobrava demais.'        
+

@@ -19,8 +19,7 @@ def generate_translation(source_sentence, num_return_sequences = 1):
 
 
 def get_best_translation(source_sentence: str, num_return_sequences=1):
-    source_sentence = source_sentence if source_sentence.endswith(
-        '.') else source_sentence + "."
+    source_sentence = source_sentence.strip(",").strip(".").strip() + "."
 
     input_ids = tokenizer(source_sentence, return_tensors="pt").input_ids
 
@@ -44,8 +43,8 @@ def get_best_translation(source_sentence: str, num_return_sequences=1):
 
 
 def get_constrained_translation_one_subject(source_sentence, constrained_sentence):
-    source_sentence = source_sentence.strip() + "."
-  
+    source_sentence = source_sentence.strip(",").strip(".").strip() + "."
+    
     input_ids = tokenizer(source_sentence, return_tensors="pt").input_ids
 
     force_words_ids = [
@@ -55,21 +54,20 @@ def get_constrained_translation_one_subject(source_sentence, constrained_sentenc
     outputs = model.generate(
         input_ids,
         force_words_ids=force_words_ids,
-        num_beams=50,
+        num_beams=20,
         num_return_sequences=2,
-        no_repeat_ngram_size=5,
-        max_new_tokens=500
+        max_new_tokens=50
     )
-
-    most_likely = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    
+    
+    more_likely = tokenizer.decode(outputs[0], skip_special_tokens=True)
     less_likely = tokenizer.decode(outputs[1], skip_special_tokens=True)
 
-    return most_likely, less_likely
+    return more_likely, less_likely
 
 
 def generate_translation_with_constrained(source_sentence, constrained_gender):
-    source_sentence = source_sentence + \
-        '.' if not source_sentence.endswith('.') else source_sentence
+    source_sentence = source_sentence.strip(",").strip(".").strip() + "."
     constrained_gender = constrained_gender.strip(",").strip()
 
     input_ids = tokenizer(source_sentence, return_tensors="pt").input_ids
@@ -90,8 +88,7 @@ def generate_translation_with_constrained(source_sentence, constrained_gender):
     return most_likely
 
 def generate_translation_with_gender_constrained(source_sentence, constrained_gender):
-    source_sentence = source_sentence + \
-        '.' if not source_sentence.endswith('.') else source_sentence
+    source_sentence = source_sentence.strip(",").strip(".").strip() + "."
     constrained_gender = constrained_gender.strip(",").strip()
 
     input_ids = tokenizer(source_sentence, return_tensors="pt").input_ids
@@ -108,6 +105,7 @@ def generate_translation_with_gender_constrained(source_sentence, constrained_ge
     )
 
     most_likely = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
     return most_likely
 
 

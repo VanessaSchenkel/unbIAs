@@ -7,19 +7,17 @@ import logging
 from docopt import docopt
 import ast
 import csv
-
+from pathlib import Path
 
 # Local imports
 from generate_neutral import make_neutral
 from spacy_utils import get_nlp_pt, get_word_pos_and_morph
 
 def get_gender_inflections(word: str):
-    print("word:", word)
     gender_inflections = {}
     word = word.rstrip(".").lower()
     word = get_nlp_pt(word)
     text, pos, morph = get_word_pos_and_morph(word)
-    print("AQUI", text, pos, morph)
     original_text = text
     gender = str(morph.get("Gender")).lower()
     number = str(morph.get("Number"))
@@ -30,7 +28,6 @@ def get_gender_inflections(word: str):
         text = text.rstrip("s")
 
     matches = get_matches(text, pos)
-    print("MATCHES:", matches)
     if matches is None:
         return "No matches"
 
@@ -59,13 +56,16 @@ def get_gender_inflections(word: str):
         forms_matched.append(new_obj)
 
     gender_inflections['forms'] = forms_matched
-
     return gender_inflections
 
 def get_matches(text, pos):
-    print("match", text, pos)
-    with open('pt-inflections-ordered.csv', newline='') as users_csv:
-        print("entrou")
+    my_file = Path("model/src/pt-inflections-ordered.csv")
+    if my_file.is_file():
+        path = 'model/src/pt-inflections-ordered.csv'
+    else:
+        path = 'pt-inflections-ordered.csv'    
+
+    with open(path, newline='') as users_csv:
         user_reader = csv.DictReader(users_csv)
         for row in user_reader:
             if row['word'] == text and pos in row['pos'].upper():
@@ -93,7 +93,6 @@ def format_sentence_inflections(possible_words):
 
 
 def get_just_possible_words(translation):
-    print("translation:", translation)
     forms_list = []
     for word in translation:
         if word.pos_ == "CCONJ" or word.pos_ == "PUNCT" or word.pos_ == "VERB":

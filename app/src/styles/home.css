@@ -141,3 +141,36 @@ form {
   color: #f8bbcc;
   font-size: 15px;
 }
+
+.img-error {
+  width: 300px;
+}
+
+.error-pg {
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  padding-top: 100px;
+  background-color: #FFBC42;
+}
+
+.error-msg {
+  padding-left: 50px;
+  padding-top: 30px;
+  color: #fff;
+}
+
+.ops-text {
+  font-size: 3rem;
+  font-weight: 700;
+}
+
+.sub-error {
+  padding-top: 140px;
+  font-weight: 700;
+  width: 100%;
+  display: flex;
+  justify-content: end;
+}

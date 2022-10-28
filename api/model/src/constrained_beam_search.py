@@ -72,7 +72,7 @@ def combine_contrained_translations(translations, constrained_splitted, source_s
             if first_token.lemma_ == second_token.lemma_ or first_token.text[:-1] == second_token.text:
                 new_sentence += first_sentence + " "
             
-    
+    print("new_sentence", new_sentence)
     if len(new_sentence.strip().split(' ')) < len(word_alignments):
         model_translation = get_best_translation(source_sentence.text_with_ws)
         model_alignment = get_word_alignment_pairs(model_translation.strip("."), new_sentence, matching_methods="m", align="mwmf")
@@ -99,16 +99,16 @@ def split_on_subj_and_bsubj(sentence, people):
                        
     return sentence_splitted            
 
+
 def get_constrained(source_sentence):
     # source_nlp = get_nlp_en(source_sentence)
     pronoun = get_pronoun_on_sentence(source_sentence)
-    print("------")
-    print("pronoun:", pronoun)
     if len(pronoun) == 0:
         return ""
     
     subj = get_disambiguate_pronoun(source_sentence, pronoun[0])
-    masculine_translation, feminine_translation = generate_translation_for_roberta_nsubj(subj)
+    subject = subj.split()
+    masculine_translation, feminine_translation = generate_translation_for_roberta_nsubj(subject[-1])
     translation = get_google_translation(source_sentence.text_with_ws)
     translation_nlp = get_nlp_pt(translation)
     constrained_sentence = ""
@@ -118,7 +118,7 @@ def get_constrained(source_sentence):
         if head not in masculine_translation and head not in feminine_translation and token.text not in masculine_translation and token.text not in feminine_translation:
             constrained_sentence += token.text_with_ws
     
-    return constrained_sentence
+    return constrained_sentence.strip(",").strip()
 
 
 def get_new_sentence_without_subj(sentence_complete, sentence_to_remove):
@@ -175,10 +175,9 @@ def split_sentence_same_subj(sentence):
 
 def generate_translation_for_roberta_nsubj(subject):
     translation = generate_translation(subject)
-    print("translation:", translation)
-    translation = get_nlp_pt(translation)
-    possible_words = get_just_possible_words(translation)
-    print("possible_words:", possible_words)
+    trans = translation.split()[-1]
+    trans_nlp = get_nlp_pt(trans)
+    possible_words = get_just_possible_words(trans_nlp)
     
     combined = [j for i in zip(*possible_words) for j in i]
 

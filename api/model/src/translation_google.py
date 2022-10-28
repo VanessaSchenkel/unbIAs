@@ -15,12 +15,6 @@ translate_client = translate.Client()
 def translate_text(text):
     """Translates text into the target language.
     """
-    
-
-    print("aquiiiii")
-    
-
-    print("translate_client:", translate_client)
 
     if isinstance(text, six.binary_type):
         text = text.decode("utf-8")
@@ -33,15 +27,20 @@ def translate_text(text):
 
 
 def get_google_translation(source_sentence):
-    print("source:", source_sentence)
     translation = translate_text(source_sentence) 
-    print("TRANSLATION:", translation)
     translation = translation + '.' if not translation.endswith('.') else translation
     sentence_formatted = check_I(source_sentence, translation) 
 
     sentence_nlp = get_nlp_pt(sentence_formatted)
    
     return sentence_nlp
+
+def get_google_translation_word(source_sentence):
+    translation = translate_text(source_sentence) 
+    word = translation.strip(".")
+    sentence_nlp = get_nlp_pt(word)
+   
+    return sentence_nlp    
 
 def check_I(source_sentence, translation):
     if source_sentence.startswith("I") or source_sentence.startswith("I'm") and not translation.lower().startswith("eu"):

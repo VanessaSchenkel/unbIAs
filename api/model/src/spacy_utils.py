@@ -100,7 +100,32 @@ def get_pobj(sentence):
 def get_people(sentence):
     people = []
     for token in sentence:
+        # print(token, token.pos_, token.dep_, token.head)
         if (token.dep_ == "nsubj" and token.pos_ == "NOUN") or (token.dep_ == "obl" and token.pos_ == "NOUN") or token.text.lower() == "eu":
+            people.append(token)
+    
+    return people     
+    
+def check_word(token_before, token, dep, next_token):
+    return token.dep_ == dep and token.pos_ == "NOUN" and "PRON" not in token.pos_ and token_before.pos_ != "VERB" and not token.is_sent_end and next_token.pos_ != "PUNCT" and next_token.pos_ != "ADP" and next_token.pos != "AUX" and token_before.pos_ != "PART" or (next_token.pos_ == "PART" and token.pos_ != "VERB")
+
+def get_people_source(sentence):
+    source = sentence.text_with_ws.strip(".")
+    doc = get_nlp_en(source)
+    people = []
+    for token in doc:
+        next_token = doc[-1]
+        token_before = doc[0]
+        if not token.is_sent_end:
+            next_token = doc[token.i + 1] 
+        if not token.is_sent_start: 
+            token_before = doc[token.i - 1]
+        # print(token, token.pos_, token.dep_, token_before.pos_, next_token.pos_)    
+        if (token.pos_ == "NOUN") and (token.dep_ == "nsubj" and next_token.pos_ != "AUX" or (token.dep_ == "obl" and token.pos_ == "NOUN") or check_word(token_before, token, "pobj", next_token) or check_word(token_before, token, "dobj", next_token)):
+            people.append(token)
+
+        #exception, spacy don't recognize cleaner as noun    
+        elif token.text == "cleaner":
             people.append(token)
     
     return people        
