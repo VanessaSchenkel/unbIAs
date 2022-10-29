@@ -71,20 +71,16 @@ def should_remove_last_word(sentence):
 def format_translations_subjs(index_to_replace, sentence, inflections):
     translations = []
 
-    print("INDEX TO REPLACE:", index_to_replace)
-    print("SENTENCE:", sentence)
-    print("INFLECTIONS:", inflections)
     for id in range(3):
         new_sentence = ""
         cont = 0
         for index, word in enumerate(sentence):
             if index not in index_to_replace:
-                new_sentence += word.text + " "
+                new_sentence += word.text_with_ws
             else:
                 new_sentence += inflections[cont][id] + " "
                 cont = cont + 1
-        print("new sentence:", new_sentence)
-        translations.append(new_sentence.strip())
+        sentence_formatted = new_sentence[0].capitalize() + new_sentence[1:]
+        translations.append(sentence_formatted)
 
-    print("translations:", translations)    
     return translations

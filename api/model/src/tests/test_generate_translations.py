@@ -88,3 +88,10 @@ def test_translation_guard():
     assert translation['second_option'] == 'A guarda odiava a cabeleireira porque ela cobrava demais.'
     assert translation['neutral'] == 'A guarda odiava [x] cabeleireir[x] porque ela cobrava demais.'        
 
+def test_translation_manager():
+    sentence = "The manager meets the counselor every week because he wants to make sure everything follows the law"
+    translation = translate(sentence)
+    
+    assert translation['first_option'] == 'O gestor reúne o conselheiro toda semana porque quer certeza que tudo está acordo a lei.'
+    assert translation['second_option'] == 'O gestor reúne a conselheira toda semana porque quer certeza que tudo está acordo a lei.'
+    assert translation['neutral'] == 'O gestor reúne [x] conselheir[x] toda semana porque quer certeza que tudo está acordo a lei.'

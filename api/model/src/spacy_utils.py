@@ -25,7 +25,7 @@ def has_gender_in_source(sentence):
 def get_pronoun_on_sentence(sentence):
     pronoun_list = []
     for token in sentence:
-        if token.pos_ == 'PRON':
+        if token.pos_ == 'PRON' and token.tag_ != 'NN':
             pronoun_list.append(token)
 
     return pronoun_list
@@ -71,8 +71,7 @@ def is_plural(word):
         return "Plur" in number 
 
 def get_word_pos_and_morph(word):
-    for token in word:
-        return token.text, token.pos_, token.morph
+    return word.text, word.pos_, word.morph
 
 def is_all_same_pronoun(sentence):
     pronoun_list = []
@@ -190,9 +189,10 @@ if __name__ == "__main__":
 
     display_with_pd(sentence)
     print("------------------------")
+    people = get_people_source(sentence)
+    print("people:", people)
+    print("------------------------")
     noun = get_noun_chunks(sentence)
-    print(noun)
-    print("-------------------------")
-    print("Is plural:", is_plural(sentence_fn))
+    print("noun:", noun)
 
     logging.info("DONE")

@@ -27,7 +27,7 @@ def get_best_translation(source_sentence: str, num_return_sequences=1):
         input_ids,
         num_beams=10,
         num_return_sequences=num_return_sequences,
-        max_new_tokens=200
+        max_new_tokens=20
     )
 
     if num_return_sequences == 1:
@@ -101,13 +101,12 @@ def generate_translation_with_gender_constrained(source_sentence, constrained_ge
         force_words_ids=force_words_ids,
         num_beams=20,
         num_return_sequences=3,
-        max_new_tokens=200
+        max_new_tokens=50,
     )
 
     most_likely = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
     return most_likely
-
 
 
 if __name__ == "__main__":
@@ -123,7 +122,7 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.INFO)
 
     if constrained_fn:
-        translation = get_constrained_translation_one_subject(sentence_fn, constrained_fn)
+        translation = generate_translation_with_gender_constrained(sentence_fn, constrained_fn)
         print("Constrained model:", translation)
     
     translation = generate_translation(sentence_fn, 1)

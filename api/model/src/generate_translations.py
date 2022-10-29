@@ -34,7 +34,7 @@ def translate(source_sentence):
     print("subjects, pronoun, gender, pobj_list", subjects, pronoun_list, gender, pobj_list)
 
     for token in source_sentence:
-        print("---->", token, " | ", token.pos_, " | ", token.dep_, " | ", token.head)
+        print("---->", token, " | ", token.pos_, " | ", token.tag_, " | ", token.dep_, " | ", token.head , " | ", token.morph)
 
     is_all_same_pronoun = is_all_equal(pronoun_list)
     is_all_same_subject = is_all_equal(subjects)
@@ -71,10 +71,11 @@ def translate(source_sentence):
         print("ENTROU 6")
         return generate_translation_more_subjects(source_sentence, subjects)
 
-    else:
-        #TODO ADD NEUTRAL
-        google_trans = get_google_translation(source_sentence.text_with_ws)
-        return {"google_translation": google_trans}    
+    # else:
+    #     #TODO ADD NEUTRAL
+    #     google_trans = get_google_translation(source_sentence.text_with_ws)
+    #     neutral = make_neutral(google_trans)
+    #     return {"google_translation": google_trans, 'neutral': neutral}    
 
 
 
@@ -112,20 +113,22 @@ def generate_translation_for_one_subj_neutral(source_sentence):
     return {"first_option": first_sentence, "second_option": second_sentence, "neutral": third_sentence}     
 
 def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
-    # translation_nlp = get_google_translation(source_sentence.text_with_ws)
-    translation_nlp = get_nlp_pt('O guarda odiava a cabeleireira porque ela cobrava demais.')
-    people = get_people(translation_nlp)
-    
-    if len(people) == 1:
-        people = []
-        people = get_align_people(source_sentence, translation_nlp)
-    
+    translation_nlp = get_google_translation(source_sentence.text_with_ws)
+    # translation_nlp = get_nlp_pt('O gerente se encontra com o conselheiro toda semana porque ele quer ter certeza de que tudo está de acordo com a lei')
+
+    people = get_align_people(source_sentence, translation_nlp)
+
+    print("PEOPLE:", people)
     constrained_splitted = split_on_subj_and_bsubj(translation_nlp, people)
+    print("CONSTRAINED SPLITTED:", constrained_splitted)
     translations = []
     
     for constrained in constrained_splitted:
         constrained_translation = generate_translation_with_gender_constrained(source_sentence.text_with_ws, constrained)
-        translations.append(constrained_translation)
+        print("CONSTRAINED TRANSLATION:", constrained_translation)
+        translation = check_constrained_translation(constrained, constrained_translation, source_sentence.text_with_ws)
+        translations.append(translation)
+    
     
     if len(translations) > 1:
         translation_constrained = combine_contrained_translations(translations, constrained_splitted, source_sentence)
@@ -136,54 +139,83 @@ def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
     subjects = []
     for pronoun in pronouns:
         subject = get_disambiguate_pronoun(source_sentence, pronoun)
-        new_obj = {'pronoun': pronoun.text, 'subject': subject}
-        subjects.append(new_obj)
+        subjects.append(subject)
 
     translations = get_gender_translations(subjects, source_sentence.text_with_ws, translation_constrained, people)
 
     return translations
 
+
+def check_constrained_translation(constrained, constrained_translation, source_sentence):
+    if len(constrained_translation) > (2*len(source_sentence)) and constrained_translation.endswith(constrained):
+        translation = generate_translation(source_sentence)
+        return translation
+    else:
+        return constrained_translation   
+
 def get_gender_translations(subjects, source_sentence, translation_constrained, people):
-        word_alignments = get_word_alignment_pairs(source_sentence, translation_constrained, matching_methods="m", align="mwmf")
-        subj_translated = ""
-        gender_pronoun = ""
+        # word_alignments = get_word_alignment_pairs(source_sentence, translation_constrained, matching_methods="m", align="mwmf")
+        # subj_translated = []
 
-        for subject in subjects:
-            subj_pronoun = get_nlp_en(subject['pronoun'])
-            gender_pronoun = set(get_sentence_gender(subj_pronoun))
-            
-            for first_sentence, second_sentence in word_alignments:
-                if first_sentence in subject['subject']:
-                    subj_translated += second_sentence + " "
-                elif second_sentence in subject['subject']:
-                    subj_translated += first_sentence + " "
+        # print("###############################")
+        # print("subjects:", subjects)
+
+        # for subject in subjects:      
+        #     print("subject:", subject)      
+        #     for first_sentence, second_sentence in word_alignments:
+        #         print(first_sentence,  " ===> ", second_sentence)
+        #         if first_sentence in subject:
+        #             subj_translated.append(second_sentence)
+        #         elif second_sentence in subject:
+        #             subj_translated.append(first_sentence)
         
+        # print("subj_translated", subj_translated)
+        # people_to_neutral = []
+        # for person in people:
+        #     if person.text not in subj_translated:
+        #         if person.text.endswith('s'):
+        #             people_to_neutral.append(person.text[:-2])
+        #         else:
+        #             people_to_neutral.append(person.text[:-1])    
 
-        translation_subj = get_nlp_pt(subj_translated)
-        translation_gender = set(get_sentence_gender(translation_subj))
+        
+        # print("people_to_neutral", people_to_neutral)
 
         people_to_neutral = []
-        for person in people:
-            if person.text not in subj_translated:
-                if person.text.endswith('s'):
-                    people_to_neutral.append(person.text[:-2])
-                else:
-                    people_to_neutral.append(person.text[:-1])    
+        source = get_nlp_en(source_sentence)
+        source_people = get_people_source(source)
+        print("source_people", source_people)
 
-        
+        p = [person.split()[-1] for person in subjects]
+        print("p:", p)
+
+        for person in source_people:
+            print("person", person)
+            print(person.text not in p)
+            if person.text not in p:
+                person_translated = generate_translation(person.text_with_ws)
+                print("person translation", person_translated)
+                people_to_neutral.append(person_translated.lower().strip(".")[:-1])
+
+
+        print("people_to_neutral", people_to_neutral)
         words_to_neutral = []
         translation = get_nlp_pt(translation_constrained)
         index_to_replace = []
 
         for index, token in enumerate(translation):
+            print(token.text[:-1] in people_to_neutral, token.head.text[:-1] in people_to_neutral)
             if token.head.text[:-1] in people_to_neutral or token.text[:-1] in people_to_neutral:
                 words_to_neutral.append(token)
                 index_to_replace.append(index)
 
+        print("WORDS TO NATURAL", words_to_neutral)        
+
         inflections = get_just_possible_words(words_to_neutral)
         first_sentence, second_sentence, third_sentence = format_translations_subjs(index_to_replace, translation, inflections)
         
-        return {"first_option": first_sentence, "second_option": second_sentence, "neutral": third_sentence}        
+        return {"first_option": first_sentence, "second_option": second_sentence, "neutral": third_sentence} 
+   
 
 def get_translation_for_one_word(source_sentence):
     try:

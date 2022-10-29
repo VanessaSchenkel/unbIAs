@@ -38,7 +38,10 @@ def make_neutral(sentence):
             else:
                 new_sentence += token.text_with_ws
         else:
-            if token.tag_ == 'PUNCT' or token.is_sent_end:
+            if token.pos_ == "ADP" and (token.text.lower() == "a" or token.text.lower() == "o"):
+                new_word = "[x]"
+                new_sentence += new_word + " "
+            elif token.tag_ == 'PUNCT' or token.is_sent_end:
                 new_sentence = new_sentence.strip() + token.text
             else:  
                 new_sentence += token.text_with_ws

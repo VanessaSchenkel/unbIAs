@@ -13,11 +13,12 @@ from pathlib import Path
 from generate_neutral import make_neutral
 from spacy_utils import get_nlp_pt, get_word_pos_and_morph
 
-def get_gender_inflections(word: str):
+def get_gender_inflections(word):
     gender_inflections = {}
-    word = word.rstrip(".").lower()
-    word = get_nlp_pt(word)
-    text, pos, morph = get_word_pos_and_morph(word)
+    # word = word.rstrip(".").lower()
+    # word = get_nlp_pt(word)
+    text_raw, pos, morph = get_word_pos_and_morph(word)
+    text = text_raw.lower()
     original_text = text
     gender = str(morph.get("Gender")).lower()
     number = str(morph.get("Number"))
@@ -59,6 +60,7 @@ def get_gender_inflections(word: str):
     return gender_inflections
 
 def get_matches(text, pos):
+    text_lower = text.lower()
     my_file = Path("model/src/pt-inflections-ordered.csv")
     if my_file.is_file():
         path = 'model/src/pt-inflections-ordered.csv'
@@ -68,13 +70,14 @@ def get_matches(text, pos):
     with open(path, newline='') as users_csv:
         user_reader = csv.DictReader(users_csv)
         for row in user_reader:
-            if row['word'] == text and pos in row['pos'].upper():
+            if row['word'] == text_lower and pos in row['pos'].upper():
+                print(row)
                 return row
-            elif text in row['forms'] and pos in row['pos'].upper():
+            elif text_lower in row['forms'] and pos in row['pos'].upper():
                 forms = row['forms']
                 forms_obj = ast.literal_eval(forms)
                 for form in forms_obj:
-                    if text == form['form']:
+                    if text_lower == form['form']:
                         return row
 
 
@@ -95,10 +98,11 @@ def format_sentence_inflections(possible_words):
 def get_just_possible_words(translation):
     forms_list = []
     for word in translation:
+        print("====", word.text, "->", word.text.lower(), "->", word.pos_)
         if word.pos_ == "CCONJ" or word.pos_ == "PUNCT" or word.pos_ == "VERB":
             forms_list.append([word.text, word.text, word.text])
         else:
-            inflections = get_gender_inflections(word.text.lower())
+            inflections = get_gender_inflections(word)
             forms = []
             if inflections == "No matches":   
                 forms.append(word.text)
@@ -129,7 +133,8 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.INFO)
 
-    inflections = get_gender_inflections(word_fn)
+    word = get_nlp_pt(word_fn)
+    inflections = get_just_possible_words(word)
     print(inflections)
 
     logging.info("DONE")
