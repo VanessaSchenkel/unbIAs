@@ -92,18 +92,10 @@ def get_noun_chunks(sentence):
 
     return chunk_list 
 
-def get_pobj(sentence):
-    pobj_list = []
-    for token in sentence:
-        if token.dep_ == "pobj":
-             pobj_list.append(token)
-
-    return pobj_list  
-
 def get_people(sentence):
     people = []
     for token in sentence:
-        print(token, token.pos_, token.tag_, token.dep_, token.head)
+        # print(token, token.pos_, token.tag_, token.dep_, token.head)
         if (token.dep_ == "nsubj" and token.pos_ == "NOUN") or (token.dep_ == "pobj" and token.pos_ == "NOUN") or (token.dep_ == "obl" and token.pos_ == "NOUN") or (token.dep_ == "iobj" and token.pos_ == "NOUN") or token.text.lower() == "eu":
             people.append(token)
     

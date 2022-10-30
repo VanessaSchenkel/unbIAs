@@ -71,7 +71,6 @@ def get_matches(text, pos):
         user_reader = csv.DictReader(users_csv)
         for row in user_reader:
             if row['word'] == text_lower and pos in row['pos'].upper():
-                print(row)
                 return row
             elif text_lower in row['forms'] and pos in row['pos'].upper():
                 forms = row['forms']
@@ -98,7 +97,7 @@ def format_sentence_inflections(possible_words):
 def get_just_possible_words(translation):
     forms_list = []
     for word in translation:
-        print("====", word.text, "->", word.text.lower(), "->", word.pos_)
+        # print("====", word.text, "->", word.text.lower(), "->", word.pos_)
         if word.pos_ == "CCONJ" or word.pos_ == "PUNCT" or word.pos_ == "VERB":
             forms_list.append([word.text, word.text, word.text])
         else:

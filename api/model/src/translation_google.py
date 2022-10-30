@@ -35,12 +35,6 @@ def get_google_translation(source_sentence):
    
     return sentence_nlp
 
-def get_google_translation_word(source_sentence):
-    translation = translate_text(source_sentence) 
-    word = translation.strip(".")
-    sentence_nlp = get_nlp_pt(word)
-   
-    return sentence_nlp    
 
 def check_I(source_sentence, translation):
     if source_sentence.startswith("I") or source_sentence.startswith("I'm") and not translation.lower().startswith("eu"):

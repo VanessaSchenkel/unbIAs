@@ -1,9 +1,10 @@
+from format_translations import format_translations_subjs
 from word_alignment import get_word_alignment_pairs
 from gender_inflection import get_just_possible_words
 from generate_model_translation import generate_translation, get_best_translation
 from translation_google import get_google_translation
 from roberta import get_disambiguate_pronoun
-from spacy_utils import get_nlp_en, get_pronoun_on_sentence, get_nlp_pt
+from spacy_utils import get_nlp_en, get_people_source, get_pronoun_on_sentence, get_nlp_pt
 
 def get_constrained_translation(translation, people):
     constrained_sentence = ""
@@ -12,7 +13,7 @@ def get_constrained_translation(translation, people):
     for token in translation:
         ancestors = [ancestor for ancestor in token.ancestors]
         children = [child for child in token.children]
-        print(token, "--->", ancestors, "--->", children)
+        # print(token, "--->", ancestors, "--->", children)
         if not any(item in ancestors for item in people) and not any(item in children for item in people) and token not in people:
             if token.pos_ != "PUNCT" or len(constrained_sentence) > 0:
                 constrained_sentence += token.text_with_ws
@@ -55,8 +56,6 @@ def combine_contrained_translations(translations, constrained_splitted, source_s
     new_sentence = ""
     for first_sentence, second_sentence in word_alignments:
         last_word = new_sentence.strip().split(" ")[-1]
-        print(first_sentence, "-->", second_sentence)
-        print(first_sentence.strip(",") == second_sentence.strip(","))
         if (first_sentence == second_sentence or first_sentence.strip(",") == second_sentence.strip(",") or first_sentence.strip(".") == second_sentence.strip(".")) and first_sentence != last_word:
             new_sentence += first_sentence + " "
         
@@ -79,35 +78,12 @@ def combine_contrained_translations(translations, constrained_splitted, source_s
             if first_token.lemma_ == second_token.lemma_ or first_token.text[:-1] == second_token.text:
                 new_sentence += first_sentence + " "
             
-    print("new_sentence", new_sentence)
-
     if len(new_sentence.strip().split(' ')) < len(word_alignments):
         model_translation = get_best_translation(source_sentence.text_with_ws)
         model_alignment = get_word_alignment_pairs(model_translation.strip("."), new_sentence, matching_methods="m", align="mwmf")
         return align_with_model(model_alignment, new_sentence)
     
-
-    print("RETURN NEW SENTENCE:", new_sentence)
     return new_sentence.strip() + "."    
-
-def split_on_subj_and_bsubj(sentence, people):
-    sentence_splitted = []
-    new_sent = ""   
-    
-    for token in sentence:
-        if token not in people and token.pos_ != "DET":
-            new_sent += token.text_with_ws
-        elif token.pos_ == "DET" and token.head not in people:
-            new_sent += token.text_with_ws
-             
-        if token.is_sent_end or token in people:
-            if len(new_sent) > 0 and new_sent != ".":
-                sentence_splitted.append(new_sent.strip())
-
-            new_sent = ""
-                       
-    return sentence_splitted            
-
 
 def get_constrained(source_sentence):
     pronoun = get_pronoun_on_sentence(source_sentence)
@@ -129,57 +105,77 @@ def get_constrained(source_sentence):
     return constrained_sentence
 
 
-def get_new_sentence_without_subj(sentence_complete, sentence_to_remove):
-    if len(sentence_to_remove) > 0:
-        new_sentence = sentence_complete.text.split(sentence_to_remove)[-1]
+def get_word_to_add(word):
+    w = get_nlp_en(word)
+    for token in w:
+        if token.is_punct:
+            return token.text
 
+    word_translatted =  generate_translation(word)
+    return word_translatted
+
+def check_constrained_translation(constrained, constrained_translation, source_sentence):
+    if len(constrained_translation) > (2*len(source_sentence)) and constrained_translation.endswith(constrained):
+        translation = generate_translation(source_sentence)
+        return translation
     else:
-        new_sentence = sentence_complete.text
-
-    return get_nlp_en(new_sentence)
-
-def get_subj_subtree(source_sentence, index):
-    sentence = ""
-  
-    for subtree in source_sentence[index].head.subtree:
-        sentence += subtree.text_with_ws
-
-    return sentence  
-
-
-def split_sentences_by_nsubj(source_sentence, subj_list):
-    splitted = []
-    sentence_complete = source_sentence
-    sentence_to_remove = ""
-
-    for sub in subj_list:
-        sentence = get_new_sentence_without_subj(sentence_complete, sentence_to_remove)
-        for token in sentence:
-            if token.text == str(sub):
-                sentence_to_remove = get_subj_subtree(sentence, token.i)
-                splitted.append(sentence_to_remove)
-
-    return splitted  
-
-def split_sentence_same_subj(sentence):
-    new_sentence = ""
-
-    for token in sentence:
-        next_token = sentence[-1]
-        if not token.is_sent_end:
-            next_token = sentence[token.i + 1] 
-        if ("PUNCT" == token.pos_ and token.text != ".") and next_token.pos_ != "CCONJ":          
-            new_sentence = new_sentence.strip() + "###" + token.text_with_ws
-        elif token.pos_ == "CCONJ":
-            new_sentence = new_sentence.strip() + "###" + token.text_with_ws
-        else:
-            new_sentence += token.text_with_ws
+        return constrained_translation   
     
-    if "###" in new_sentence:
-        return new_sentence.split("###")
+def get_gender_translations(subjects, source_sentence, translation_constrained, people):
+        people_to_neutral = []
+        source = get_nlp_en(source_sentence)
+        source_people = get_people_source(source)
 
-    return new_sentence  
+        p = [person.split()[-1] for person in subjects]
 
+        for person in source_people:
+            if person.text not in p:
+                person_translated = generate_translation(person.text_with_ws)
+                person_formatted = person_translated.lower().strip(".")
+                people_to_neutral.append(person_formatted[:-1])
+                people_to_neutral.append(person_formatted[:-2])
+                people_to_neutral.append(person.text)
+
+
+        words_to_neutral = []
+        translation = get_nlp_pt(translation_constrained)
+        index_to_replace = []
+
+        for index, token in enumerate(translation):
+            # print(token, "->", token.lemma_,"->", token.head,"->", token.head.lemma_)
+            if token.head.text in people_to_neutral or token.head.text[:-1] in people_to_neutral or token.head.lemma_ in people_to_neutral or token.text in people_to_neutral or token.text[:-1] in people_to_neutral or token.lemma_ in people_to_neutral :
+                words_to_neutral.append(token)
+                index_to_replace.append(index)
+
+        inflections = get_just_possible_words(words_to_neutral)
+        first_sentence, second_sentence, third_sentence = format_translations_subjs(index_to_replace, translation, inflections)
+        
+        return first_sentence, second_sentence, third_sentence
+
+def get_constrained_one_subj(translation, people):
+    constrained_sentence = ""
+    list_constrained = []
+
+    for token in translation:
+        ancestors = [ancestor for ancestor in token.ancestors]
+        children = [child for child in token.children]
+
+        if not any(item in ancestors for item in people) and not any(item in children for item in people) and token not in people:
+            if token.pos_ != "PUNCT" or len(constrained_sentence) > 0:
+                constrained_sentence += token.text_with_ws
+        
+        elif token.text.lower() != 'eu' and len(constrained_sentence) > 0:
+            list_constrained.append(constrained_sentence.strip())
+            constrained_sentence = ""
+
+        if token.is_sent_end and len(constrained_sentence) > 0:
+            list_constrained.append(constrained_sentence.strip())
+    
+    if len(list_constrained) == 1 and len(translation.text_with_ws) == len(list_constrained[0]):
+        return ""
+
+    return list_constrained
+          
 
 def generate_translation_for_roberta_nsubj(subject):
     translation = generate_translation(subject)

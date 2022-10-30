@@ -91,8 +91,6 @@ def generate_translation_with_gender_constrained(source_sentence, constrained_ge
     source_sentence = source_sentence.strip(",").strip(".").strip() + "."
     constrained_gender = constrained_gender.strip(",").strip()
     
-    print("==== source_sentence:", source_sentence)
-    print("==== constrained_gender:", constrained_gender)
     input_ids = tokenizer(source_sentence, return_tensors="pt").input_ids
     
     force_words_ids = tokenizer(
