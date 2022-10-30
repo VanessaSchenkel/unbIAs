@@ -12,7 +12,7 @@ def get_constrained_translation(translation, people):
     for token in translation:
         ancestors = [ancestor for ancestor in token.ancestors]
         children = [child for child in token.children]
-
+        print(token, "--->", ancestors, "--->", children)
         if not any(item in ancestors for item in people) and not any(item in children for item in people) and token not in people:
             if token.pos_ != "PUNCT" or len(constrained_sentence) > 0:
                 constrained_sentence += token.text_with_ws
@@ -49,15 +49,22 @@ def align_with_model(model_alignment, new_sentence):
     
     return new_sentence_model.strip() + "." 
 
-def combine_contrained_translations(translations, constrained_splitted, source_sentence, matching_methods = "i", align = "itermax"):
+def combine_contrained_translations(translations, constrained_splitted, source_sentence, model="bert", matching_methods = "i", align = "itermax", people_model = []):
     first_translation, second_translation = translations
-    word_alignments = get_word_alignment_pairs(first_translation.strip("."), second_translation.strip("."), matching_methods=matching_methods, align=align)
+    word_alignments = get_word_alignment_pairs(first_translation.strip("."), second_translation.strip("."), model=model, matching_methods=matching_methods, align=align)
     new_sentence = ""
     for first_sentence, second_sentence in word_alignments:
         last_word = new_sentence.strip().split(" ")[-1]
-
-        if first_sentence == second_sentence and first_sentence != last_word:
+        print(first_sentence, "-->", second_sentence)
+        print(first_sentence.strip(",") == second_sentence.strip(","))
+        if (first_sentence == second_sentence or first_sentence.strip(",") == second_sentence.strip(",") or first_sentence.strip(".") == second_sentence.strip(".")) and first_sentence != last_word:
             new_sentence += first_sentence + " "
+        
+        elif len(people_model) > 0 and first_sentence != second_sentence and first_sentence in people_model:
+            new_sentence += first_sentence + " " 
+            
+        elif len(people_model) > 0 and first_sentence != second_sentence and second_sentence in people_model:
+            new_sentence += second_sentence + " "      
 
         elif any(first_sentence in word for word in constrained_splitted) and first_sentence != last_word:
             new_sentence += first_sentence + " "
@@ -73,12 +80,14 @@ def combine_contrained_translations(translations, constrained_splitted, source_s
                 new_sentence += first_sentence + " "
             
     print("new_sentence", new_sentence)
+
     if len(new_sentence.strip().split(' ')) < len(word_alignments):
         model_translation = get_best_translation(source_sentence.text_with_ws)
         model_alignment = get_word_alignment_pairs(model_translation.strip("."), new_sentence, matching_methods="m", align="mwmf")
         return align_with_model(model_alignment, new_sentence)
     
 
+    print("RETURN NEW SENTENCE:", new_sentence)
     return new_sentence.strip() + "."    
 
 def split_on_subj_and_bsubj(sentence, people):
@@ -92,7 +101,7 @@ def split_on_subj_and_bsubj(sentence, people):
             new_sent += token.text_with_ws
              
         if token.is_sent_end or token in people:
-            if len(new_sent) > 0:
+            if len(new_sent) > 0 and new_sent != ".":
                 sentence_splitted.append(new_sent.strip())
 
             new_sent = ""
@@ -101,14 +110,13 @@ def split_on_subj_and_bsubj(sentence, people):
 
 
 def get_constrained(source_sentence):
-    # source_nlp = get_nlp_en(source_sentence)
     pronoun = get_pronoun_on_sentence(source_sentence)
+    
     if len(pronoun) == 0:
         return ""
     
     subj = get_disambiguate_pronoun(source_sentence, pronoun[0])
-    subject = subj.split()
-    masculine_translation, feminine_translation = generate_translation_for_roberta_nsubj(subject[-1])
+    masculine_translation, feminine_translation = generate_translation_for_roberta_nsubj(subj)
     translation = get_google_translation(source_sentence.text_with_ws)
     translation_nlp = get_nlp_pt(translation)
     constrained_sentence = ""
@@ -118,7 +126,7 @@ def get_constrained(source_sentence):
         if head not in masculine_translation and head not in feminine_translation and token.text not in masculine_translation and token.text not in feminine_translation:
             constrained_sentence += token.text_with_ws
     
-    return constrained_sentence.strip(",").strip()
+    return constrained_sentence
 
 
 def get_new_sentence_without_subj(sentence_complete, sentence_to_remove):

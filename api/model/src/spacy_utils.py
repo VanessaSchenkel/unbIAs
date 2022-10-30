@@ -70,6 +70,10 @@ def is_plural(word):
         number = token.morph.get("Number")
         return "Plur" in number 
 
+def is_plural_word(word):
+    number = word.morph.get("Number")
+    return "Plur" in number 
+
 def get_word_pos_and_morph(word):
     return word.text, word.pos_, word.morph
 
@@ -99,14 +103,14 @@ def get_pobj(sentence):
 def get_people(sentence):
     people = []
     for token in sentence:
-        # print(token, token.pos_, token.dep_, token.head)
-        if (token.dep_ == "nsubj" and token.pos_ == "NOUN") or (token.dep_ == "obl" and token.pos_ == "NOUN") or token.text.lower() == "eu":
+        print(token, token.pos_, token.tag_, token.dep_, token.head)
+        if (token.dep_ == "nsubj" and token.pos_ == "NOUN") or (token.dep_ == "pobj" and token.pos_ == "NOUN") or (token.dep_ == "obl" and token.pos_ == "NOUN") or (token.dep_ == "iobj" and token.pos_ == "NOUN") or token.text.lower() == "eu":
             people.append(token)
     
     return people     
     
 def check_word(token_before, token, dep, next_token):
-    return token.dep_ == dep and token.pos_ == "NOUN" and "PRON" not in token.pos_ and token_before.pos_ != "VERB" and not token.is_sent_end and next_token.pos_ != "PUNCT" and next_token.pos_ != "ADP" and next_token.pos != "AUX" and token_before.pos_ != "PART" or (next_token.pos_ == "PART" and token.pos_ != "VERB")
+    return token.dep_ == dep and token.pos_ == "NOUN" and "PRON" not in token.pos_ and token_before.pos_ != "VERB" and not token.is_sent_end and next_token.text != "." and next_token.pos_ != "ADP" and next_token.pos != "AUX" and token_before.pos_ != "PART" or (next_token.pos_ == "PART" and token.pos_ != "VERB")
 
 def get_people_source(sentence):
     source = sentence.text_with_ws.strip(".")
@@ -120,7 +124,7 @@ def get_people_source(sentence):
         if not token.is_sent_start: 
             token_before = doc[token.i - 1]
         # print(token, token.pos_, token.dep_, token_before.pos_, next_token.pos_)    
-        if (token.pos_ == "NOUN") and (token.dep_ == "nsubj" and next_token.pos_ != "AUX" or (token.dep_ == "obl" and token.pos_ == "NOUN") or check_word(token_before, token, "pobj", next_token) or check_word(token_before, token, "dobj", next_token)):
+        if (token.pos_ == "NOUN") and (token.dep_ == "nsubj" and next_token.pos_ != "AUX" or (token.dep_ == "obl" and token.pos_ == "NOUN") or check_word(token_before, token, "dative", next_token) or check_word(token_before, token, "pobj", next_token) or check_word(token_before, token, "dobj", next_token)):
             people.append(token)
 
         #exception, spacy don't recognize cleaner as noun    

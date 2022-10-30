@@ -84,9 +84,9 @@ def test_translation_guard():
     sentence = "The guard hated the hairdresser because she charged too much."
     translation = translate(sentence)
     
-    assert translation['first_option'] == 'A guarda odiava o cabeleireiro porque ela cobrava demais.'
+    assert translation['first_option'] == 'O guarda odiava a cabeleireira porque ela cobrava demais.'
     assert translation['second_option'] == 'A guarda odiava a cabeleireira porque ela cobrava demais.'
-    assert translation['neutral'] == 'A guarda odiava [x] cabeleireir[x] porque ela cobrava demais.'        
+    assert translation['neutral'] == '[x] guarda odiava a cabeleireira porque ela cobrava demais.'        
 
 def test_translation_manager():
     sentence = "The manager meets the counselor every week because he wants to make sure everything follows the law"
@@ -95,3 +95,20 @@ def test_translation_manager():
     assert translation['first_option'] == 'O gestor reúne o conselheiro toda semana porque quer certeza que tudo está acordo a lei.'
     assert translation['second_option'] == 'O gestor reúne a conselheira toda semana porque quer certeza que tudo está acordo a lei.'
     assert translation['neutral'] == 'O gestor reúne [x] conselheir[x] toda semana porque quer certeza que tudo está acordo a lei.'
+
+
+def test_translation_librarian():
+    sentence = "The salesperson sold some books to the librarian because he wanted to learn."
+    translation = translate(sentence)
+    
+    assert translation['first_option'] == 'O vendedor vendeu alguns livros ao bibliotecário porque queria aprender.'
+    assert translation['second_option'] == 'A vendedora vendeu alguns livros ao bibliotecário porque queria aprender.'
+    assert translation['neutral'] == '[x] vendedor vendeu alguns livros ao bibliotecário porque queria aprender.'  
+
+def test_translation_laywer():
+    sentence = "The lawyer yelled at the hairdresser because he did a bad job."
+    translation = translate(sentence)
+    
+    assert translation['first_option'] == 'O advogado gritou com o cabeleireiro porque fez um péssimo trabalho.'
+    assert translation['second_option'] == 'A advogada gritou com o cabeleireiro porque fez um péssimo trabalho.'
+    assert translation['neutral'] == '[x] advogad[x] gritou com o cabeleireiro porque fez um péssimo trabalho.' 

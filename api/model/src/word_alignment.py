@@ -39,13 +39,11 @@ def format_sentences(first_sentence, second_sentence):
         return sent2, sent1
 
 def get_align_people(source_sentence, translation_sentence):
-    word_alignments = get_word_alignment_pairs(source_sentence.text_with_ws, translation_sentence.text_with_ws, matching_methods = "m", align = "mwmf")
+    word_alignments = get_word_alignment_pairs(source_sentence.text_with_ws, translation_sentence.text_with_ws, model="bert", matching_methods = "i", align = "itermax")
     source_people = get_people_source(source_sentence)
-    print("source_people", source_people)
     people = [token.text for token in source_people]
     people_align = []
     for sent1, sent2 in word_alignments:
-        print(sent1, "->", sent2)
         if sent1 in people: 
             people_align.append(sent2)
         elif sent2 in people:  

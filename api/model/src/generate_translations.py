@@ -63,7 +63,7 @@ def translate(source_sentence):
         print("ENTROU 4")
         return generate_translation_it(source_sentence)
     
-    elif len(pobj_list) > len(pronoun_list):
+    elif len(pobj_list) > len(pronoun_list) or len(pobj_list) > len(gender):
         print("ENTROU 5")
         return generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence)
 
@@ -72,6 +72,7 @@ def translate(source_sentence):
         return generate_translation_more_subjects(source_sentence, subjects)
 
     # else:
+
     #     #TODO ADD NEUTRAL
     #     google_trans = get_google_translation(source_sentence.text_with_ws)
     #     neutral = make_neutral(google_trans)
@@ -114,8 +115,7 @@ def generate_translation_for_one_subj_neutral(source_sentence):
 
 def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
     translation_nlp = get_google_translation(source_sentence.text_with_ws)
-    # translation_nlp = get_nlp_pt('O gerente se encontra com o conselheiro toda semana porque ele quer ter certeza de que tudo está de acordo com a lei')
-
+    # translation_nlp = get_nlp_pt('O vendedor vendeu alguns livros ao bibliotecário porque queria aprender.')
     people = get_align_people(source_sentence, translation_nlp)
 
     print("PEOPLE:", people)
@@ -131,9 +131,21 @@ def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
     
     
     if len(translations) > 1:
-        translation_constrained = combine_contrained_translations(translations, constrained_splitted, source_sentence)
+        translations_aligned = combine_contrained_translations(translations, constrained_splitted, source_sentence)
     else:
-        translation_constrained = translations[0]
+        translations_aligned = translations[0]
+
+    translation_model_constrained = [translations_aligned, translation_nlp.text_with_ws]
+    translation_nlp_model = get_nlp_pt(translations_aligned)
+    people_model = get_align_people(source_sentence, translation_nlp_model)
+    print("PEOPLE MODEL:", people_model)
+    people_text = [person.text for person in people_model]
+    print("PEOPLE TEXT:", people_text)
+    translation_with_constrained = combine_contrained_translations(translation_model_constrained, constrained_splitted, source_sentence, people_model=people_text)    
+
+    
+    print("----> translations_aligned:", translations_aligned)    
+    print("----> translation_with_constrained:", translation_with_constrained)    
     
     pronouns = get_pronoun_on_sentence(source_sentence)
     subjects = []
@@ -141,7 +153,7 @@ def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
         subject = get_disambiguate_pronoun(source_sentence, pronoun)
         subjects.append(subject)
 
-    translations = get_gender_translations(subjects, source_sentence.text_with_ws, translation_constrained, people)
+    translations = get_gender_translations(subjects, source_sentence.text_with_ws, translation_with_constrained, people)
 
     return translations
 
@@ -195,7 +207,10 @@ def get_gender_translations(subjects, source_sentence, translation_constrained, 
             if person.text not in p:
                 person_translated = generate_translation(person.text_with_ws)
                 print("person translation", person_translated)
-                people_to_neutral.append(person_translated.lower().strip(".")[:-1])
+                person_formatted = person_translated.lower().strip(".")
+                people_to_neutral.append(person_formatted[:-1])
+                people_to_neutral.append(person_formatted[:-2])
+                people_to_neutral.append(person.text)
 
 
         print("people_to_neutral", people_to_neutral)
@@ -204,8 +219,8 @@ def get_gender_translations(subjects, source_sentence, translation_constrained, 
         index_to_replace = []
 
         for index, token in enumerate(translation):
-            print(token.text[:-1] in people_to_neutral, token.head.text[:-1] in people_to_neutral)
-            if token.head.text[:-1] in people_to_neutral or token.text[:-1] in people_to_neutral:
+            print(token, "->", token.lemma_,"->", token.head,"->", token.head.lemma_)
+            if token.head.text in people_to_neutral or token.head.text[:-1] in people_to_neutral or token.head.lemma_ in people_to_neutral or token.text in people_to_neutral or token.text[:-1] in people_to_neutral or token.lemma_ in people_to_neutral :
                 words_to_neutral.append(token)
                 index_to_replace.append(index)
 
@@ -237,21 +252,31 @@ def get_translation_for_one_word(source_sentence):
         return "An error occurred translating one word"
 
 def generate_translation_for_one_subj(source_sentence):
-    try:
+    # try:
         translation_google =  get_google_translation(source_sentence.text_with_ws) 
         # translation_google =  get_nlp_pt("Ela é uma boa médica.") 
+
         subject = get_only_subject_sentence(translation_google)
+
         if subject.pos_ == 'NOUN':
-            constrained_sentence = get_constrained(source_sentence) 
+            constrained_sentence = get_constrained(source_sentence)  
             more_likely, less_likely = get_constrained_translation_one_subject(source_sentence.text_with_ws, constrained_sentence)
             neutral = make_neutral_with_constrained(more_likely, constrained_sentence)
 
             return {"more_likely": more_likely,"less_likely": less_likely ,"neutral": neutral.capitalize()}
 
-        
-        constrained_splitted = get_constrained_translation(translation_google, [subject])        
-        translations = []
+        # splitted_google_trans = split_sentence_same_subj(translation_google)
+        # print("splitted_google_trans: ", splitted_google_trans)
 
+        # splitted_source = split_sentence_same_subj(source_sentence)
+        # print("splitted_source: ", splitted_source)
+
+        # constrained_sentence = get_constrained(source_sentence)  
+        # print("constrained_sentence: ", constrained_sentence)
+        
+        constrained_splitted = get_constrained_one_subj(translation_google, [subject])
+        
+        translations = []
         for constrained in constrained_splitted:
             constrained_translation = generate_translation_with_constrained(source_sentence.text_with_ws, constrained)
             translations.append(constrained_translation)
@@ -265,9 +290,32 @@ def generate_translation_for_one_subj(source_sentence):
 
         return {"translation": translation_constrained, "neutral": neutral.capitalize()}
 
-    except:
-        return {"error": "An error occurred translating for one subject"}
+    # except:
+    #     return {"error": "An error occurred translating for one subject"}
 
+def get_constrained_one_subj(translation, people):
+    constrained_sentence = ""
+    list_constrained = []
+
+    for token in translation:
+        ancestors = [ancestor for ancestor in token.ancestors]
+        children = [child for child in token.children]
+
+        if not any(item in ancestors for item in people) and not any(item in children for item in people) and token not in people:
+            if token.pos_ != "PUNCT" or len(constrained_sentence) > 0:
+                constrained_sentence += token.text_with_ws
+        
+        elif token.text.lower() != 'eu' and len(constrained_sentence) > 0:
+            list_constrained.append(constrained_sentence.strip())
+            constrained_sentence = ""
+
+        if token.is_sent_end and len(constrained_sentence) > 0:
+            list_constrained.append(constrained_sentence.strip())
+    
+    if len(list_constrained) == 1 and len(translation.text_with_ws) == len(list_constrained[0]):
+        return ""
+
+    return list_constrained
 
 def generate_translation_with_subject_and_neutral(source_sentence):
     try:
@@ -352,13 +400,16 @@ def get_word_to_add(word):
 def generate_translation_more_subjects(source_sentence, subjects):
     try:
         sentence = format_sentence(source_sentence)
+        print("SENTENCE:", sentence)
         splitted_list = []
         for sent in sentence:
             sent = get_nlp_en(sent)
             splitted_list.append(split_sentences_by_nsubj(sent, subjects))
         
+        print("SPLITTED:", splitted_list)
         collapsed = list(more_itertools.collapse(splitted_list))
-
+        
+        print("COLLAPSED:", collapsed)
         translations_more_likely = []
         translations_neutral = []
 
@@ -380,8 +431,10 @@ def generate_translation_more_subjects(source_sentence, subjects):
                 sentence_to_translate = sentence
             
             sentence_to_translate += "."
+            print("SENTENCE TO TRANSLATE:", sentence_to_translate)
             sent = get_nlp_en(sentence_to_translate)
             translations = generate_translation_for_one_subj(sent)
+            print("TRANSLATIONS:", translations)
             more_likely = word_to_add + translations['more_likely'] + word_to_add_last
             neutral = word_to_add + translations['neutral'] + word_to_add_last
             translations_more_likely.append(more_likely)

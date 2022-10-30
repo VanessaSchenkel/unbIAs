@@ -134,7 +134,7 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.INFO)
 
     word = get_nlp_pt(word_fn)
-    inflections = get_just_possible_words(word)
+    inflections = get_just_possible_words(word_fn)
     print(inflections)
 
     logging.info("DONE")
