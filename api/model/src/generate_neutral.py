@@ -34,7 +34,10 @@ def make_neutral(sentence):
                 new_sentence += new_word
             elif token.tag_ == 'DET' and token.text.lower() == "a" or token.text.lower() == "o":
                 new_word = "[x]"
-                new_sentence += new_word + " "     
+                new_sentence += new_word + " " 
+            elif token.text.lower() == "à" or token.text.lower() == "ao":
+                new_word = "[x]"
+                new_sentence += new_word + " "
             else:
                 new_sentence += token.text_with_ws
         else:
@@ -43,6 +46,9 @@ def make_neutral(sentence):
                 new_sentence += new_word + " "
             elif token.tag_ == 'PUNCT' or token.is_sent_end:
                 new_sentence = new_sentence.strip() + token.text
+            elif token.text.lower() == "homem" or token.text.lower() == "mulher":
+                new_word = "pessoa"
+                new_sentence += new_word + " "    
             else:  
                 new_sentence += token.text_with_ws
 

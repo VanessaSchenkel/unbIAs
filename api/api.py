@@ -17,10 +17,10 @@ def get_current_time():
 @app.route('/translate', methods=['POST'])
 def json_example():
     request_data = request.get_json()
-    print(request_data)
     try:
-        translations = translate(request_data['source_sentence'].lower())
-        print("TRANSLATIONS:", translations)
+        source = request_data['source_sentence']
+        source_capitalized = source[0].upper() + source[1:]
+        translations = translate(source_capitalized)
         return jsonify(translations)
     except:
         error = {"error": "An error occurred translating sentences :("}

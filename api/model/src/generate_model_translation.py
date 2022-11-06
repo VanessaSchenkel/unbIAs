@@ -5,7 +5,7 @@
 # External imports
 import logging
 from docopt import docopt
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, DisjunctiveConstraint
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 model_name = 'VanessaSchenkel/pt-unicamp-handcrafted'
 tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -18,8 +18,11 @@ def generate_translation(source_sentence, num_return_sequences = 1):
     return translation_model
 
 
-def get_best_translation(source_sentence: str, num_return_sequences=1):
-    source_sentence = source_sentence.strip(",").strip(".").strip() + "."
+def get_best_translation(source_sentence, num_return_sequences=1):
+    if type(source_sentence) == str:
+        source_sentence = source_sentence.strip(",").strip(".").strip() + "."
+    else:
+        source_sentence = source_sentence.text
 
     input_ids = tokenizer(source_sentence, return_tensors="pt").input_ids
 

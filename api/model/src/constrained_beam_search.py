@@ -2,7 +2,6 @@ from format_translations import format_translations_subjs
 from word_alignment import get_word_alignment_pairs
 from gender_inflection import get_just_possible_words
 from generate_model_translation import generate_translation, get_best_translation
-from translation_google import get_google_translation
 from roberta import get_disambiguate_pronoun
 from spacy_utils import get_nlp_en, get_people_source, get_pronoun_on_sentence, get_nlp_pt
 
@@ -45,24 +44,24 @@ def align_with_model(model_alignment, new_sentence):
                 
             
         if model_sentence == alignment_sentence:
-            new_sentence_model += new_sentence.strip() + "."
+            new_sentence_model += new_sentence.strip(".").strip() + "."
             return new_sentence_model
     
-    return new_sentence_model.strip() + "." 
+    return new_sentence_model.replace(".", "").strip() + "." 
 
 def combine_contrained_translations(translations, constrained_splitted, source_sentence, model="bert", matching_methods = "i", align = "itermax", people_model = []):
-    first_translation, second_translation = translations
-    word_alignments = get_word_alignment_pairs(first_translation.strip("."), second_translation.strip("."), model=model, matching_methods=matching_methods, align=align)
+    first, second = translations
+    word_alignments = get_word_alignment_pairs(first.strip(), second.strip(), model=model, matching_methods=matching_methods, align=align)
     new_sentence = ""
     for first_sentence, second_sentence in word_alignments:
         last_word = new_sentence.strip().split(" ")[-1]
         if (first_sentence == second_sentence or first_sentence.strip(",") == second_sentence.strip(",") or first_sentence.strip(".") == second_sentence.strip(".")) and first_sentence != last_word:
             new_sentence += first_sentence + " "
         
-        elif len(people_model) > 0 and first_sentence != second_sentence and first_sentence in people_model:
+        elif len(people_model) > 0 and first_sentence != second_sentence and first_sentence in people_model and first_sentence != last_word:
             new_sentence += first_sentence + " " 
             
-        elif len(people_model) > 0 and first_sentence != second_sentence and second_sentence in people_model:
+        elif len(people_model) > 0 and first_sentence != second_sentence and second_sentence in people_model and second_sentence != last_word:
             new_sentence += second_sentence + " "      
 
         elif any(first_sentence in word for word in constrained_splitted) and first_sentence != last_word:
@@ -79,13 +78,14 @@ def combine_contrained_translations(translations, constrained_splitted, source_s
                 new_sentence += first_sentence + " "
             
     if len(new_sentence.strip().split(' ')) < len(word_alignments):
-        model_translation = get_best_translation(source_sentence.text_with_ws)
+        # model_translation = get_best_translation(source_sentence.text_with_ws)
+        model_translation = get_best_translation(source_sentence)
         model_alignment = get_word_alignment_pairs(model_translation.strip("."), new_sentence, matching_methods="m", align="mwmf")
         return align_with_model(model_alignment, new_sentence)
     
-    return new_sentence.strip() + "."    
+    return new_sentence.replace(".", "").strip() + "."    
 
-def get_constrained(source_sentence):
+def get_constrained(source_sentence, translation):
     pronoun = get_pronoun_on_sentence(source_sentence)
     
     if len(pronoun) == 0:
@@ -93,7 +93,6 @@ def get_constrained(source_sentence):
     
     subj = get_disambiguate_pronoun(source_sentence, pronoun[0])
     masculine_translation, feminine_translation = generate_translation_for_roberta_nsubj(subj)
-    translation = get_google_translation(source_sentence.text_with_ws)
     translation_nlp = get_nlp_pt(translation)
     constrained_sentence = ""
 
@@ -117,6 +116,7 @@ def get_word_to_add(word):
 def check_constrained_translation(constrained, constrained_translation, source_sentence):
     if len(constrained_translation) > (2*len(source_sentence)) and constrained_translation.endswith(constrained):
         translation = generate_translation(source_sentence)
+            
         return translation
     else:
         return constrained_translation   
@@ -135,7 +135,6 @@ def get_gender_translations(subjects, source_sentence, translation_constrained, 
                 people_to_neutral.append(person_formatted[:-1])
                 people_to_neutral.append(person_formatted[:-2])
                 people_to_neutral.append(person.text)
-
 
         words_to_neutral = []
         translation = get_nlp_pt(translation_constrained)

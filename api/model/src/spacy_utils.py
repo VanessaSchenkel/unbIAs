@@ -25,6 +25,14 @@ def has_gender_in_source(sentence):
 def get_pronoun_on_sentence(sentence):
     pronoun_list = []
     for token in sentence:
+        if token.pos_ == 'PRON' and token.tag_ != 'NN' and token.text.lower() != "it" and token.text.lower() != "you":
+            pronoun_list.append(token)
+
+    return pronoun_list
+
+def get_pronoun_on_sentence_with_it(sentence):
+    pronoun_list = []
+    for token in sentence:
         if token.pos_ == 'PRON' and token.tag_ != 'NN':
             pronoun_list.append(token)
 
@@ -53,6 +61,9 @@ def get_only_subject_sentence(sentence):
         if token.dep_ == 'nsubj':
             return token
 
+def get_morph(sentence):
+    for token in sentence:
+        return token.morph
 
 def get_sentence_gender(sentence):
     gender_list = []
@@ -116,7 +127,7 @@ def get_people_source(sentence):
         if not token.is_sent_start: 
             token_before = doc[token.i - 1]
         # print(token, token.pos_, token.dep_, token_before.pos_, next_token.pos_)    
-        if (token.pos_ == "NOUN") and (token.dep_ == "nsubj" and next_token.pos_ != "AUX" or (token.dep_ == "obl" and token.pos_ == "NOUN") or check_word(token_before, token, "dative", next_token) or check_word(token_before, token, "pobj", next_token) or check_word(token_before, token, "dobj", next_token)):
+        if (token.pos_ == "NOUN") and (token.dep_ == "nsubj" and next_token.pos_ != "AUX" or (token.dep_ == "obl" and token.pos_ == "NOUN") or check_word(token_before, token, "dative", next_token) or check_word(token_before, token, "pobj", next_token) or check_word(token_before, token, "dobj", next_token)) and token.text != "present":
             people.append(token)
 
         #exception, spacy don't recognize cleaner as noun    

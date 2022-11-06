@@ -6,13 +6,14 @@ def split_on_subj_and_bsubj(sentence, people):
     new_sent = ""   
     
     for token in sentence:
+        print("--->", token, token.pos_)
         if token not in people and token.pos_ != "DET":
             new_sent += token.text_with_ws
         elif token.pos_ == "DET" and token.head not in people:
             new_sent += token.text_with_ws
              
         if token.is_sent_end or token in people:
-            if len(new_sent) > 0 and new_sent != ".":
+            if len(new_sent.strip()) > 0 and new_sent != ".":
                 sentence_splitted.append(new_sent.strip())
 
             new_sent = ""

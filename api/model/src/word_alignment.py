@@ -18,11 +18,11 @@ def get_word_alignment_pairs(first_sentence, second_sentence, model="bert-base-u
     source_tokens, target_tokens = format_sentences(first_sentence, second_sentence)
     sent1 = []
     sent2 = []
-    # print("Possible Alignments From SimAlign")
-    # print("Word in Sent 1 -----> Word in Sent 2")
+    print("Possible Alignments From SimAlign")
+    print("Word in Sent 1 -----> Word in Sent 2")
     alignments = initialize(source_tokens, target_tokens, model, matching_methods, align)
     for item in alignments:
-    #  print(source_tokens[item[0]],"---------->", target_tokens[item[1]])
+     print(source_tokens[item[0]],"---------->", target_tokens[item[1]])
      sent1.append(source_tokens[item[0]])
      sent2.append(target_tokens[item[1]])
 
@@ -30,13 +30,15 @@ def get_word_alignment_pairs(first_sentence, second_sentence, model="bert-base-u
     return list(word_align_pairs) 
 
 def format_sentences(first_sentence, second_sentence):
-    sent1 = first_sentence.split()
-    sent2 = second_sentence.split()
+    sent1 = first_sentence.strip(".").split()
+    sent2 = second_sentence.strip(".").split()
 
-    if len(sent1) >= len(sent2):
-        return sent1, sent2
-    else:
-        return sent2, sent1
+    return sent1, sent2
+
+    # if len(sent1) >= len(sent2):
+    #     return sent1, sent2
+    # else:
+    #     return sent2, sent1
 
 def get_align_people(source_sentence, translation_sentence):
     word_alignments = get_word_alignment_pairs(source_sentence.text_with_ws, translation_sentence.text_with_ws, model="bert", matching_methods = "i", align = "itermax")

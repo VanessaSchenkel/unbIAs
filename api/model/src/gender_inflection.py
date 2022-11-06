@@ -18,6 +18,7 @@ def get_gender_inflections(word):
     # word = word.rstrip(".").lower()
     # word = get_nlp_pt(word)
     text_raw, pos, morph = get_word_pos_and_morph(word)
+    # print("====", word.text, "->", word.text.lower(), "->", word.pos_, "->", word.morph)
     text = text_raw.lower()
     original_text = text
     gender = str(morph.get("Gender")).lower()
