@@ -6,7 +6,7 @@ import logging
 from docopt import docopt
 from simalign import SentenceAligner
 
-from spacy_utils import get_people_source
+from spacy_utils import get_nlp_pt, get_people_source
 
 #matching-methods = "m: Max Weight Matching (mwmf), a: argmax (inter), i: itermax, f: forward (fwd), r: reverse (rev)"
 def initialize(first_sentence, second_sentence, model, matching_methods, align):
@@ -18,11 +18,11 @@ def get_word_alignment_pairs(first_sentence, second_sentence, model="bert-base-u
     source_tokens, target_tokens = format_sentences(first_sentence, second_sentence)
     sent1 = []
     sent2 = []
-    print("Possible Alignments From SimAlign")
-    print("Word in Sent 1 -----> Word in Sent 2")
+    # print("Possible Alignments From SimAlign")
+    # print("Word in Sent 1 -----> Word in Sent 2")
     alignments = initialize(source_tokens, target_tokens, model, matching_methods, align)
     for item in alignments:
-     print(source_tokens[item[0]],"---------->", target_tokens[item[1]])
+    #  print(source_tokens[item[0]],"---------->", target_tokens[item[1]])
      sent1.append(source_tokens[item[0]])
      sent2.append(target_tokens[item[1]])
 
@@ -34,11 +34,6 @@ def format_sentences(first_sentence, second_sentence):
     sent2 = second_sentence.strip(".").split()
 
     return sent1, sent2
-
-    # if len(sent1) >= len(sent2):
-    #     return sent1, sent2
-    # else:
-    #     return sent2, sent1
 
 def get_align_people(source_sentence, translation_sentence):
     word_alignments = get_word_alignment_pairs(source_sentence.text_with_ws, translation_sentence.text_with_ws, model="bert", matching_methods = "i", align = "itermax")
@@ -57,6 +52,53 @@ def get_align_people(source_sentence, translation_sentence):
             people_list.append(token)
 
     return people_list   
+
+def get_subject_translated_aligned(source_sentence, translations_aligned, subjects):
+        alignment_with_constrained = get_word_alignment_pairs(source_sentence.text, translations_aligned, model="bert", matching_methods = "i", align = "itermax")
+        sub_split = subjects[0].split()
+        subj_translated = ""
+        
+        for first_sentence, second_sentence in alignment_with_constrained: 
+            if first_sentence in sub_split:
+                subj_translated += second_sentence + " "
+                
+        return subj_translated     
+
+def get_translations_aligned_model_google(translation_google, translations_aligned, subj_translated):
+        alignment_with_translation = get_word_alignment_pairs(translation_google.text, translations_aligned, model="bert", matching_methods = "i", align = "itermax")
+        translated = ""
+        subj_translated_split = subj_translated.split()
+        for first_sentence, second_sentence in alignment_with_translation: 
+            last_word = translated.strip().split(" ")[-1]
+            if second_sentence in subj_translated_split and second_sentence != last_word and second_sentence not in translated:
+                translated += second_sentence + " "
+            elif first_sentence[:-1] != last_word[:-1] or len(translated) == 0:
+                translated += first_sentence + " "
+
+        return get_nlp_pt(translated)
+
+def get_people_to_neutral_and_people_google(source_sentence, translation_nlp, people_to_neutral_source, sub_split):
+    people_to_neutral= []
+    alignment = get_word_alignment_pairs(source_sentence.text, translation_nlp.text, model="bert", matching_methods = "i", align = "itermax")
+    people_google = ""
+    
+    for first_sentence, second_sentence in alignment:
+      if first_sentence in people_to_neutral_source:
+        people_to_neutral.append(second_sentence)
+      elif first_sentence == sub_split:
+          people_google = second_sentence
+    
+    return people_to_neutral, people_google      
+
+def get_people_model(source_sentence, translation_model_nlp, subject_source):
+    alignment_model = get_word_alignment_pairs(source_sentence.text, translation_model_nlp.text, model="bert", matching_methods = "i", align = "itermax")
+    people_model = ""
+    
+    for first_sentence, second_sentence in alignment_model:
+      if first_sentence == subject_source:
+        people_model = second_sentence
+    
+    return people_model 
 
 if __name__ == "__main__":
     # Parse command line arguments

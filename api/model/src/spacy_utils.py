@@ -136,6 +136,17 @@ def get_people_source(sentence):
     
     return people        
 
+def get_words_to_neutral_and_index_to_replace(translation, people_to_neutral):
+    words_to_neutral = []
+    index_to_replace = []
+    
+    for index, token in enumerate(translation):
+            if token.head.text in people_to_neutral or token.head.text[:-1] in people_to_neutral or token.head.lemma_ in people_to_neutral or token.text in people_to_neutral or token.text[:-1] in people_to_neutral or token.lemma_ in people_to_neutral:
+                words_to_neutral.append(token)
+                index_to_replace.append(index)  
+    
+    return words_to_neutral, index_to_replace            
+
 def get_all_information(sentence):
     for token in sentence:
         children = [child for child in token.children]

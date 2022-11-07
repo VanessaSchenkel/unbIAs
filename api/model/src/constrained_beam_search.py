@@ -1,7 +1,8 @@
 from format_translations import format_translations_subjs
+from split_sentence import split_on_subj_and_bsubj
 from word_alignment import get_word_alignment_pairs
 from gender_inflection import get_just_possible_words
-from generate_model_translation import generate_translation, get_best_translation
+from generate_model_translation import generate_translation, generate_translation_with_gender_constrained, get_best_translation
 from roberta import get_disambiguate_pronoun
 from spacy_utils import get_nlp_en, get_people_source, get_pronoun_on_sentence, get_nlp_pt
 
@@ -174,7 +175,6 @@ def get_constrained_one_subj(translation, people):
         return ""
 
     return list_constrained
-          
 
 def generate_translation_for_roberta_nsubj(subject):
     translation = generate_translation(subject)
@@ -188,3 +188,58 @@ def generate_translation_for_roberta_nsubj(subject):
     splitted_by_dot = joined.split(".")
 
     return splitted_by_dot[0].strip(), splitted_by_dot[1].strip()
+
+def combine_translations(translation_google, people_google, translation_model, people_model):
+    head_google = [token for token in translation_google if token.head.text == people_google]
+    head_model = [token for token in translation_model if token.head.text == people_model]
+    
+    gender_head_google = [token.morph.get("Gender").pop() for token in head_google if len(token.morph.get("Gender")) > 0]
+    gender_head_model = [token.morph.get("Gender").pop() for token in head_model if len(token.morph.get("Gender")) > 0]
+            
+    if(set(gender_head_google) != set(gender_head_model)):
+        lemmas_google = [token.lemma_ for token in head_google]
+        lemmas_model = [token.lemma_ for token in head_model]
+
+        if lemmas_google == lemmas_model:
+            google_index = [token.i for token in head_google]
+            new_translation = ""
+                
+            translation_split = translation_google.text.split(" ")
+            for index, index_replace in enumerate(google_index):
+                translation_split[index_replace] = head_model[index].text
+                
+            new_translation = " ".join(translation_split)    
+            translation = get_nlp_pt(new_translation)
+            return translation
+    
+    return translation_google    
+        
+def get_translations_aligned(translations, constrained_splitted, source_sentence):
+        translations_aligned = ""
+        if len(translations) == 1:
+            translations_aligned = translations[0]
+        elif len(translations) == 2:
+            translations_aligned = combine_contrained_translations(translations, constrained_splitted, source_sentence)
+        elif len(translations) > 2:
+            translation = ""
+            trans_aligned = ""
+            for index, translation in enumerate(translations):
+                if index == 0:
+                    trans_aligned = translations[0]
+                elif index < len(translations)-1:
+                    next_trans = translations[index+1]
+                    trans = [trans_aligned, next_trans]
+                    trans_aligned = combine_contrained_translations(trans, constrained_splitted, source_sentence)
+                else:
+                    translation = combine_contrained_translations([trans_aligned, translations[-1]], constrained_splitted, source_sentence)
+                    translations_aligned =  translation
+        return translations_aligned        
+    
+def get_translations_with_constrained(source_sentence, constrained_splitted):
+        translations = []
+        for constrained in constrained_splitted:
+            constrained_translation = generate_translation_with_gender_constrained(source_sentence.text_with_ws, constrained)
+            translation = check_constrained_translation(constrained, constrained_translation, source_sentence.text_with_ws)
+            translations.append(translation)    
+        
+        return translations  

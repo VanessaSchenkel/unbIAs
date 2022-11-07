@@ -6,7 +6,7 @@ def split_on_subj_and_bsubj(sentence, people):
     new_sent = ""   
     
     for token in sentence:
-        print("--->", token, token.pos_)
+        # print("--->", token, token.pos_)
         if token not in people and token.pos_ != "DET":
             new_sent += token.text_with_ws
         elif token.pos_ == "DET" and token.head not in people:

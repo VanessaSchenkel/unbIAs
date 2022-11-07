@@ -10,14 +10,14 @@ from split_sentence import split_on_subj_and_bsubj, split_sentences_by_nsubj
 
 # Local imports
 from translation_google import get_google_translation
-from spacy_utils import get_morph, get_people_source, get_pronoun_on_sentence, get_pronoun_on_sentence_with_it, get_word_pos_and_morph, is_plural, get_only_subject_sentence, get_people, get_nlp_en, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, get_noun_chunks
+from spacy_utils import get_morph, get_people_source, get_pronoun_on_sentence, get_pronoun_on_sentence_with_it, get_word_pos_and_morph, get_words_to_neutral_and_index_to_replace, is_plural, get_only_subject_sentence, get_people, get_nlp_en, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, get_noun_chunks
 from generate_model_translation import generate_translation_with_constrained, generate_translation_with_gender_constrained, generate_translation, get_constrained_translation_one_subject
 from gender_inflection import get_gender_inflections, get_just_possible_words, format_sentence_inflections
-from constrained_beam_search import  check_constrained_translation, get_constrained, get_constrained_one_subj, get_constrained_translation, combine_contrained_translations, get_gender_translations, get_word_to_add
+from constrained_beam_search import  check_constrained_translation, combine_translations, get_constrained, get_constrained_one_subj, get_constrained_translation, combine_contrained_translations, get_gender_translations, get_translations_aligned, get_translations_with_constrained, get_word_to_add
 from generate_neutral import make_neutral_with_constrained, make_neutral
-from roberta import get_disambiguate_pronoun
+from roberta import get_disambiguate_pronoun, get_subject_source
 from format_translations import format_sentence, format_translations_subjs, should_remove_first_word, should_remove_last_word
-from word_alignment import get_align_people, get_word_alignment_pairs
+from word_alignment import get_align_people, get_people_model, get_people_to_neutral_and_people_google, get_subject_translated_aligned, get_translations_aligned_model_google, get_word_alignment_pairs
 
 def translate(source_sentence):
     try:
@@ -237,194 +237,47 @@ def generate_translation_it(source_sentence):
     
     
 def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
-    translation_nlp = get_nlp_pt('O designer colaborou com o carpinteiro e deu a ela uma planta.')
+    translation_nlp = get_nlp_pt('A caixa conversou com o pedreiro e esperava ter o mesmo salário que ela.')
     people = get_align_people(source_sentence, translation_nlp)
-    print("-----------------")
-    print("PEOPLE:", people)
     
-    translation_model = generate_translation(source_sentence)
-    print("translation_model:", translation_model)
-    
-    source_nlp = get_nlp_en(source_sentence)
+    translation_model = generate_translation(source_sentence)    
     translation_model_nlp = get_nlp_pt(translation_model)
-    people_model = get_align_people(source_nlp, translation_model_nlp)
-    print("-----------------")
-    print("PEOPLE MODEL:", people_model)
     
-    pronouns = get_pronoun_on_sentence(source_sentence)
-    subjects = []
-    for pronoun in pronouns:
-        subject = get_disambiguate_pronoun(source_sentence, pronoun)
-        subjects.append(subject)
-    
-    print("pronouns:", pronouns)
-    print("subjects:", subjects)
-    
-    sub_split = subjects[0].split()[-1]
+    subject_source = get_subject_source(source_sentence)
     source_people = get_people_source(source_sentence)
-    print("source people ======", source_people)
-    people_to_neutral_source = [person.text for person in source_people if person.text != sub_split]
-    print("people_to_neutral_source ======", people_to_neutral_source)
-    alignment_model = get_word_alignment_pairs(source_sentence.text, translation_model_nlp.text, model="bert", matching_methods = "i", align = "itermax")
-    people_model = ""
+    people_model = get_people_model(source_sentence, translation_model_nlp, subject_source)
     
-    for first_sentence, second_sentence in alignment_model:
-      if first_sentence == sub_split:
-        people_model = second_sentence
+    people_to_neutral_source = [person.text for person in source_people if person.text != subject_source]
     
-    people_to_neutral= []
-    
-    alignment = get_word_alignment_pairs(source_sentence.text, translation_nlp.text, model="bert", matching_methods = "i", align = "itermax")
-    people_google = ""
-    
-    print("PEOPLE TO NEUTRAL SOURCE:", people_to_neutral_source)
-    for first_sentence, second_sentence in alignment:
-      print(first_sentence, "====> ", second_sentence)
-      if first_sentence in people_to_neutral_source:
-        people_to_neutral.append(second_sentence)
-      elif first_sentence == sub_split:
-          people_google = second_sentence
-    
-    print("PEOPLE TO NEUTRAL ANTES:", people_to_neutral)
-    print("PEOPLE MODEL:", people_model)      
-    print("PEOPLE GOOGLE:", people_google)
-    
-    print(people_model == people_google)
+    people_to_neutral, people_google = get_people_to_neutral_and_people_google(source_sentence, translation_nlp, people_to_neutral_source, subject_source)
     
     people_model_nlp = get_nlp_pt(people_model)
     people_google_nlp = get_nlp_pt(people_google)
-    
     model_morph = get_morph(people_model_nlp)
     model_google = get_morph(people_google_nlp)
     
-    print("PEOPLE MODEL MORPH:", get_morph(people_model_nlp))      
-    print("'VerbForm' not in model_morph:", get_sentence_gender(people_model_nlp))      
-    print("PEOPLE GOOGLE MORPH:", get_morph(people_google_nlp))
-    
     gender_people_model = get_sentence_gender(people_model_nlp)
+    
+    print("GENDER_PEOPLE_MODEL:", gender_people_model)
+    print("people_model_nlp:", people_model_nlp)
+    print("people_google_nlp:", people_google_nlp)
+    print("model_morph:", model_morph)
+    print("model_google:", model_google)
 
-    if len(gender_people_model) > 0 and model_morph != model_google: 
-        print("===== ENTROU IF ==========")
-        
+    if (people_google == None or len(people_google) == 0) and len(people_model_nlp) > 0:
+        translation_nlp = translation_model_nlp
+    elif len(gender_people_model) > 0 and model_morph != model_google: 
         constrained_splitted = split_on_subj_and_bsubj(translation_nlp, people)
-        print("constrained_splitted:", constrained_splitted)
-        translations = []
-        
-        for constrained in constrained_splitted:
-            constrained_translation = generate_translation_with_gender_constrained(source_sentence.text_with_ws, constrained)
-            print("constrained_translation:", constrained_translation)
-            translation = check_constrained_translation(constrained, constrained_translation, source_sentence.text_with_ws)
-            print("translation:", translation)
-            
-            translations.append(translation)
-        
-        print("TRANSLATIONS:", translations)
-        if len(translations) == 1:
-            translations_aligned = translations[0]
-        elif len(translations) == 2:
-            translations_aligned = combine_contrained_translations(translations, constrained_splitted, source_sentence)
-        elif len(translations) > 2:
-            translation = ""
-            trans_aligned = ""
-            for index, translation in enumerate(translations):
-                print("------- INDEX:", index)   
-                if index == 0:
-                    print("index == 0")  
-                    trans_aligned = translations[0]
-                    print("trans_aligned:", trans_aligned)
-                elif index < len(translations)-1:
-                    print("LEN", len(translations))
-                    print(index < len(translations))
-                    next_trans = translations[index+1]
-                    print("next_trans:", next_trans)
-                    trans = [trans_aligned, next_trans]
-                    trans_aligned = combine_contrained_translations(trans, constrained_splitted, source_sentence)
-                    print("trans_aligned:", trans_aligned)
-                else:
-                    translation = combine_contrained_translations([trans_aligned, translations[-1]], constrained_splitted, source_sentence)
-                    print("translations_aligned:", translation)
-                    translations_aligned =  translation
-                print("---------------")  
-    
-        print("TRANSLATIONS ALIGNED:", translations_aligned)
-        
-        alignment_with_constrained = get_word_alignment_pairs(source_sentence.text, translations_aligned, model="bert", matching_methods = "i", align = "itermax")
-        sub_split = subjects[0].split()
-        subj_translated = ""
-        
-        for first_sentence, second_sentence in alignment_with_constrained: 
-            if first_sentence in sub_split:
-                subj_translated += second_sentence + " "
-
-        print("SUBJ TRANSLATED:", subj_translated)
-        
-        alignment_with_translation = get_word_alignment_pairs(translation_nlp.text, translations_aligned, model="bert", matching_methods = "i", align = "itermax")
-    
-        translated = ""
-        subj_translated_split = subj_translated.split()
-        for first_sentence, second_sentence in alignment_with_translation: 
-            last_word = translated.strip().split(" ")[-1]
-            if second_sentence in subj_translated_split and second_sentence != last_word and second_sentence not in translated:
-                print("second_sentence:", second_sentence)
-                print("subj_translated_split:", subj_translated_split)
-                print("second_sentence in subj_translated_split", second_sentence in subj_translated_split)
-                translated += second_sentence + " "
-            elif first_sentence[:-1] != last_word[:-1] or len(translated) == 0:
-                translated += first_sentence + " "
-
-        print("TRANSLATED:", translated)
-        translation_nlp = get_nlp_pt(translated)
-    
+        translations = get_translations_with_constrained(source_sentence, constrained_splitted)    
+        translations_aligned_model = get_translations_aligned(translations, constrained_splitted, source_sentence)
+        subj_translated = get_subject_translated_aligned(source_sentence, translations_aligned_model, subject_source)
+        translation_nlp = get_translations_aligned_model_google(translation_nlp, translations_aligned_model, subj_translated)
     elif people_model == people_google:
-        print("===== ENTROU ELIF ==========")
-        head_google = [token for token in translation_nlp if token.head.text == people_google]
-        head_model = [token for token in translation_model_nlp if token.head.text == people_model]
-        
-        print("head_google", head_google)
-        print("head_model", head_model)
-        
-        gender_head_google = [token.morph.get("Gender").pop() for token in head_google if len(token.morph.get("Gender")) > 0]
-        gender_head_model = [token.morph.get("Gender").pop() for token in head_model if len(token.morph.get("Gender")) > 0]
-            
-        print("gender_head_google", gender_head_google)
-        print("gender_head_model", gender_head_model)
-        
-        if(set(gender_head_google) != set(gender_head_model)):
-            lemmas_google = [token.lemma_ for token in head_google]
-            lemmas_model = [token.lemma_ for token in head_model]
-
-            print(lemmas_google)
-            print(lemmas_model)
-
-            if lemmas_google == lemmas_model:
-                google_index = [token.i for token in head_google]
-                print(google_index)
-                new_translation = ""
-                
-                translation_split = translation_nlp.text.split(" ")
-                for index, index_replace in enumerate(google_index):
-                    translation_split[index_replace] = head_model[index].text
-                
-                new_translation = " ".join(translation_split)    
-                translation_nlp = get_nlp_pt(new_translation)
+        translation_nlp = combine_translations(translation_nlp, people_google, translation_model_nlp, people_model)
     
-    print("TRANSLATION NLP:", translation_nlp)
-    words_to_neutral = []
-    index_to_replace = []
-    for index, token in enumerate(translation_nlp):
-            print(token, "->", token.lemma_,"->", token.head,"->", token.head.lemma_)
-            if token.head.text in people_to_neutral or token.head.text[:-1] in people_to_neutral or token.head.lemma_ in people_to_neutral or token.text in people_to_neutral or token.text[:-1] in people_to_neutral or token.lemma_ in people_to_neutral :
-                words_to_neutral.append(token)
-                index_to_replace.append(index)
-
-    print("PEOPLE TO NEUTRAL:", people_to_neutral)
+    words_to_neutral, index_to_replace = get_words_to_neutral_and_index_to_replace(translation_nlp, people_to_neutral)
     inflections = get_just_possible_words(words_to_neutral)
-    print("INFLECTIONS:", inflections)
     first_sentence, second_sentence, third_sentence = format_translations_subjs(index_to_replace, translation_nlp, inflections)
-    
-    print(first_sentence)
-    print(second_sentence)
-    print(third_sentence)
     
     return {"first_option": first_sentence.replace(".", "").strip() + "." , "second_option": second_sentence.replace(".", "").strip() + "." , "neutral": third_sentence.replace(".", "").strip() + "." } 
     

@@ -18,6 +18,15 @@ def get_disambiguate_pronoun(sentence, pronoun):
 
     return person
 
+def get_subject_source(source_sentence):
+    pronouns = get_pronoun_on_sentence(source_sentence)
+    subjects = []
+    for pronoun in pronouns:
+        subject = get_disambiguate_pronoun(source_sentence, pronoun)
+        subjects.append(subject)
+    
+    sub_split = subjects[0].split()[-1]
+    return sub_split
 
 # roBERTa has a bug, if is the pronoun is the start of the sentence, it crashes
 def check_if_is_first_in_sentence(new_source_sentence):
