@@ -21,7 +21,7 @@ def generate_translations_wino():
     english_sentences = get_english_sentences()
     google_translation = get_google_translations()
     translations = []
-    start = 2630
+    start = 3630
     end = 3888
     
     for index in range(start, end):
