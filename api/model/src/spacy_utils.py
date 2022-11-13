@@ -25,7 +25,7 @@ def has_gender_in_source(sentence):
 def get_pronoun_on_sentence(sentence):
     pronoun_list = []
     for token in sentence:
-        if token.pos_ == 'PRON' and token.tag_ != 'NN' and token.text.lower() != "it" and token.text.lower() != "you":
+        if token.pos_ == 'PRON' and token.tag_ != 'NN' and token.text.lower() != "it" and token.text.lower() != "you" and token.text != "I" and token.text.lower() != "this":
             pronoun_list.append(token)
 
     return pronoun_list
@@ -42,7 +42,7 @@ def get_pronoun_on_sentence_with_it(sentence):
 def get_nsubj_sentence(sentence):
     nsubj_list = []
     for token in sentence:
-        if token.dep_ == 'nsubj':
+        if token.dep_ == 'nsubj' and token.tag_ != 'DT':
             nsubj_list.append(token)
 
     return nsubj_list
@@ -70,8 +70,8 @@ def get_sentence_gender(sentence):
     for token in sentence:
         gender = token.morph.get("Gender")
 
-        #spacy says eu is masculine
-        if len(gender) > 0 and token.text.lower() != "eu":
+        #spacy says eu and you are masculine
+        if len(gender) > 0 and token.text.lower() != "eu" and token.text.lower() != "you":
             gender_list.append(gender.pop())
 
     return gender_list
@@ -107,7 +107,7 @@ def get_people(sentence):
     people = []
     for token in sentence:
         # print(token, token.pos_, token.tag_, token.dep_, token.head)
-        if (token.dep_ == "nsubj" and token.pos_ == "NOUN") or (token.dep_ == "pobj" and token.pos_ == "NOUN") or (token.dep_ == "obl" and token.pos_ == "NOUN") or (token.dep_ == "iobj" and token.pos_ == "NOUN") or token.text.lower() == "eu":
+        if (token.dep_ == "nsubj" and token.pos_ == "NOUN") or (token.dep_ == "pobj" and token.pos_ == "NOUN") or (token.dep_ == "obl" and token.pos_ == "NOUN") or (token.dep_ == "iobj" and token.pos_ == "NOUN") or token.text.lower() == "eu" or token.text.lower() == "você":
             people.append(token)
     
     return people     
@@ -134,7 +134,27 @@ def get_people_source(sentence):
         elif token.text == "cleaner":
             people.append(token)
     
-    return people        
+    return people  
+
+          
+def get_translation_with_punctuation(sentence, punctuation = "."):
+    final = get_nlp_pt(sentence)[-1]
+    
+    print("FINAL:::", final)
+    print("FINAL::: is_punct ", final.is_punct)
+    
+    if not final.is_punct or final.text == "\"" or final.text == " \"":
+        sentence += punctuation
+    
+    return get_nlp_pt(sentence)
+
+def get_sentence_with_punctuation(sentence):
+    final = get_nlp_en(sentence)[-1]
+    if not final.is_punct and not final.text == "\"":
+        sentence += "."
+    
+    return get_nlp_en(sentence)
+
 
 def get_words_to_neutral_and_index_to_replace(translation, people_to_neutral):
     words_to_neutral = []

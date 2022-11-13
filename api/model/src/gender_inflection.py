@@ -11,7 +11,7 @@ from pathlib import Path
 
 # Local imports
 from generate_neutral import make_neutral
-from spacy_utils import get_nlp_pt, get_word_pos_and_morph
+from spacy_utils import get_nlp_pt, get_translation_with_punctuation, get_word_pos_and_morph
 
 def get_gender_inflections(word):
     gender_inflections = {}
@@ -83,19 +83,40 @@ def get_matches(text, pos):
 
 def format_sentence_inflections(possible_words):
     combined = [j for i in zip(*possible_words) for j in i]
+    
+    # print("combined", combined)
 
+    last_word = possible_words[-1][-1]
     joined = " ".join(combined)
     joined_replace_comma = joined.replace(" ,", ",")
-    splitted_by_dot = joined_replace_comma.split(".")
+    joined_replace_question_marks = joined_replace_comma.replace(" \"", "\"").replace("\" ", "\"")
+    splitted_by_dot = joined_replace_question_marks.split(last_word)
+    
+    # print("splitted_by_dot", splitted_by_dot)
+    # print("last_word", last_word)
+    # print("possible_words", possible_words)
 
-    first_option = splitted_by_dot[0].strip().capitalize() + "."
-    second_option = splitted_by_dot[1].strip().capitalize() + "."
-    neutral = splitted_by_dot[2].strip().capitalize() + "."
-
-    return first_option, second_option, neutral
+    first_option = splitted_by_dot[0].strip()
+    first_word = first_option[0].capitalize() + " " if len(first_option) == 1 else first_option[0].capitalize() 
+    first_sentence = first_word + first_option[1:] + last_word
+    
+    second_option = splitted_by_dot[1].strip()
+    first_word = second_option[0].capitalize() + " " if len(second_option) == 1 else second_option[0].capitalize() 
+    second_sentence = first_word + second_option[1:] + last_word
+    
+    neutral = splitted_by_dot[2].strip()
+    first_word = neutral[0].capitalize() + " " if len(neutral) == 1 else neutral[0].capitalize() 
+    neutral_sentence = first_word + neutral[1:] + last_word
+    
+    # print("----> first_sentence", first_sentence)
+    # print("----> second_sentence", second_sentence)
+    # print("----> neutral_sentence", neutral_sentence)
+    
+    return first_sentence, second_sentence, neutral_sentence
 
 
 def get_just_possible_words(translation):
+    # print("::::: translation possible", translation)
     forms_list = []
     for word in translation:
         # print("====", word.text, "->", word.text.lower(), "->", word.pos_)

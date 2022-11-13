@@ -1,5 +1,10 @@
+import re
 from spacy_utils import get_nlp_en
 
+def split_on_punctuation(sentence):
+    splitted_sentence = re.split('(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', sentence)
+    # splitted_sentence = re.split('(?<=[.!?]) +', sentence)
+    return splitted_sentence
 
 def split_on_subj_and_bsubj(sentence, people):
     sentence_splitted = []
@@ -51,4 +56,4 @@ def split_sentences_by_nsubj(source_sentence, subj_list):
                 sentence_to_remove = get_subj_subtree(sentence, token.i)
                 splitted.append(sentence_to_remove)
 
-    return splitted  
+    return splitted

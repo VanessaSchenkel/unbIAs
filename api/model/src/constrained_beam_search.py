@@ -4,16 +4,15 @@ from word_alignment import get_word_alignment_pairs
 from gender_inflection import get_just_possible_words
 from generate_model_translation import generate_translation, generate_translation_with_gender_constrained, get_best_translation
 from roberta import get_disambiguate_pronoun
-from spacy_utils import get_nlp_en, get_people_source, get_pronoun_on_sentence, get_nlp_pt
+from spacy_utils import get_morph, get_nlp_en, get_people_source, get_pronoun_on_sentence, get_nlp_pt, get_translation_with_punctuation
 
-def get_constrained_translation(translation, people):
+def get_constrained_translation_gender(translation, people):
     constrained_sentence = ""
     list_constrained = []
-
+    
     for token in translation:
         ancestors = [ancestor for ancestor in token.ancestors]
         children = [child for child in token.children]
-        # print(token, "--->", ancestors, "--->", children)
         if not any(item in ancestors for item in people) and not any(item in children for item in people) and token not in people:
             if token.pos_ != "PUNCT" or len(constrained_sentence) > 0:
                 constrained_sentence += token.text_with_ws
@@ -30,6 +29,36 @@ def get_constrained_translation(translation, people):
 
     return list_constrained
 
+def generate_constrain_subject_and_neutral(translation):
+    constrained = ""
+
+    for token in translation:
+        # print(token, token.dep_, token.pos_)
+        if token.dep_ == 'ROOT':
+            constrained = token.text  
+
+    return constrained
+    
+def get_constrained_translation(translation, people):
+    constrained_sentence = ""
+    list_constrained = []
+
+    for token in translation:
+        if token in people and len(constrained_sentence) > 0:
+            list_constrained.append(constrained_sentence.strip())
+            constrained_sentence = ""
+    
+        elif token not in people:
+            constrained_sentence += token.text_with_ws
+            if token.is_sent_end and len(constrained_sentence) > 0:
+                list_constrained.append(constrained_sentence.strip())
+              
+    
+    if len(list_constrained) == 1 and len(translation.text_with_ws) == len(list_constrained[0]):
+        return ""
+
+    return list_constrained    
+
 def align_with_model(model_alignment, new_sentence):
     new_sentence_model = ""
 
@@ -45,13 +74,17 @@ def align_with_model(model_alignment, new_sentence):
                 
             
         if model_sentence == alignment_sentence:
-            new_sentence_model += new_sentence.strip(".").strip() + "."
-            return new_sentence_model
+            new_sentence_model += new_sentence
+            return new_sentence_model.strip()
     
-    return new_sentence_model.replace(".", "").strip() + "." 
+    return new_sentence_model.strip()
 
 def combine_contrained_translations(translations, constrained_splitted, source_sentence, model="bert", matching_methods = "i", align = "itermax", people_model = []):
+    punctuation = constrained_splitted[-1][-1]
     first, second = translations
+    
+    print("translations: ----->", translations)
+    print("constrained_splitted: ----->", constrained_splitted)
     word_alignments = get_word_alignment_pairs(first.strip(), second.strip(), model=model, matching_methods=matching_methods, align=align)
     new_sentence = ""
     for first_sentence, second_sentence in word_alignments:
@@ -80,15 +113,16 @@ def combine_contrained_translations(translations, constrained_splitted, source_s
             
     if len(new_sentence.strip().split(' ')) < len(word_alignments):
         # model_translation = get_best_translation(source_sentence.text_with_ws)
+        print("ENTROU AQUI")
         model_translation = get_best_translation(source_sentence)
         model_alignment = get_word_alignment_pairs(model_translation.strip("."), new_sentence, matching_methods="m", align="mwmf")
         return align_with_model(model_alignment, new_sentence)
     
-    return new_sentence.replace(".", "").strip() + "."    
+    sentence =  get_translation_with_punctuation(new_sentence, punctuation)
+    return sentence.text
 
 def get_constrained(source_sentence, translation):
     pronoun = get_pronoun_on_sentence(source_sentence)
-    
     if len(pronoun) == 0:
         return ""
     
@@ -176,6 +210,27 @@ def get_constrained_one_subj(translation, people):
 
     return list_constrained
 
+def get_constrained_without_people(google_translation):
+    constrained_splitted = []
+    sentence = ""
+    for token in google_translation:       
+        if token.dep_ == "nsubj" and len(sentence) > 0:
+            constrained_splitted.append(sentence.strip())
+            sentence = ""
+        
+        elif token.morph.get("Gender") == ['Masc'] or token.morph.get("Gender") == ['Fem']:
+                sentence += token.text_with_ws
+                constrained_splitted.append(sentence.strip())
+                sentence = ""   
+            
+        else:
+            sentence += token.text_with_ws
+            if token.is_sent_end and len(sentence) > 0:  
+                constrained_splitted.append(sentence.strip())
+                sentence = ""
+        
+    return constrained_splitted      
+
 def generate_translation_for_roberta_nsubj(subject):
     translation = generate_translation(subject)
     trans = translation.split()[-1]
@@ -233,7 +288,10 @@ def get_translations_aligned(translations, constrained_splitted, source_sentence
                 else:
                     translation = combine_contrained_translations([trans_aligned, translations[-1]], constrained_splitted, source_sentence)
                     translations_aligned =  translation
-        return translations_aligned        
+        
+        translation = get_translation_with_punctuation(translations_aligned)
+        # print("----> translations_aligned translation", translation)            
+        return translation        
     
 def get_translations_with_constrained(source_sentence, constrained_splitted):
         translations = []

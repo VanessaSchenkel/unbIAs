@@ -23,6 +23,8 @@ def should_remove_last_word(sentence):
 
 def format_translations_subjs(index_to_replace, sentence, inflections):
     translations = []
+    
+    # print("---> sentence", sentence)
 
     for id in range(3):
         new_sentence = ""
@@ -34,6 +36,8 @@ def format_translations_subjs(index_to_replace, sentence, inflections):
                 new_sentence += inflections[cont][id] + " "
                 cont = cont + 1
         sentence_formatted = new_sentence[0].capitalize() + new_sentence[1:]
+        # print("---> sentence_formatted", sentence_formatted)
         translations.append(sentence_formatted)
 
+    # print("---> translations", translations)
     return translations

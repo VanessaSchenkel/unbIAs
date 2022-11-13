@@ -6,7 +6,7 @@ import logging
 from docopt import docopt
 from simalign import SentenceAligner
 
-from spacy_utils import get_nlp_pt, get_people_source
+from spacy_utils import get_nlp_pt, get_people_source, get_translation_with_punctuation
 
 #matching-methods = "m: Max Weight Matching (mwmf), a: argmax (inter), i: itermax, f: forward (fwd), r: reverse (rev)"
 def initialize(first_sentence, second_sentence, model, matching_methods, align):
@@ -30,8 +30,8 @@ def get_word_alignment_pairs(first_sentence, second_sentence, model="bert-base-u
     return list(word_align_pairs) 
 
 def format_sentences(first_sentence, second_sentence):
-    sent1 = first_sentence.strip(".").split()
-    sent2 = second_sentence.strip(".").split()
+    sent1 = first_sentence.split() if type(first_sentence) == str else first_sentence.text.split()
+    sent2 = second_sentence.split() if type(second_sentence) == str else second_sentence.text.split()
 
     return sent1, sent2
 
@@ -66,6 +66,7 @@ def get_subject_translated_aligned(source_sentence, translations_aligned, subjec
 
 def get_translations_aligned_model_google(translation_google, translations_aligned, subj_translated):
         alignment_with_translation = get_word_alignment_pairs(translation_google.text, translations_aligned, model="bert", matching_methods = "i", align = "itermax")
+        print("ALIGMENT ", alignment_with_translation)
         translated = ""
         subj_translated_split = subj_translated.split()
         for first_sentence, second_sentence in alignment_with_translation: 
@@ -75,7 +76,8 @@ def get_translations_aligned_model_google(translation_google, translations_align
             elif first_sentence[:-1] != last_word[:-1] or len(translated) == 0:
                 translated += first_sentence + " "
 
-        return get_nlp_pt(translated)
+        translated_nlp = get_translation_with_punctuation(translated)
+        return translated_nlp
 
 def get_people_to_neutral_and_people_google(source_sentence, translation_nlp, people_to_neutral_source, sub_split):
     people_to_neutral= []

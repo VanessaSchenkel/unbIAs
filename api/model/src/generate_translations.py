@@ -31,10 +31,10 @@ def translate(source_sentence):
         gender = get_sentence_gender(source_sentence)
         people_source = get_people_source(source_sentence)
             
-        print("subjects, pronoun, gender, people_source", subjects, pronoun_list, gender, people_source)
+        # print("subjects, pronoun, gender, people_source", subjects, pronoun_list, gender, people_source)
 
-        for token in source_sentence:
-            print("---->", token, " | ", token.pos_, " | ", token.tag_, " | ", token.dep_, " | ", token.head , " | ", token.morph)
+        # for token in source_sentence:
+        #     print("---->", token, " | ", token.pos_, " | ", token.tag_, " | ", token.dep_, " | ", token.head , " | ", token.morph)
 
         is_all_same_pronoun = is_all_equal(pronoun_list)
         is_all_same_subject = is_all_equal(subjects)
@@ -258,11 +258,11 @@ def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
     
     gender_people_model = get_sentence_gender(people_model_nlp)
     
-    print("GENDER_PEOPLE_MODEL:", gender_people_model)
-    print("people_model_nlp:", people_model_nlp)
-    print("people_google_nlp:", people_google_nlp)
-    print("model_morph:", model_morph)
-    print("model_google:", model_google)
+    # print("GENDER_PEOPLE_MODEL:", gender_people_model)
+    # print("people_model_nlp:", people_model_nlp)
+    # print("people_google_nlp:", people_google_nlp)
+    # print("model_morph:", model_morph)
+    # print("model_google:", model_google)
 
     if (people_google == None or len(people_google) == 0) and len(people_model_nlp) > 0:
         translation_nlp = translation_model_nlp

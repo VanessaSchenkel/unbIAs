@@ -20,7 +20,7 @@ def generate_translation(source_sentence, num_return_sequences = 1):
 
 def get_best_translation(source_sentence, num_return_sequences=1):
     if type(source_sentence) == str:
-        source_sentence = source_sentence.strip(",").strip(".").strip() + "."
+        source_sentence = source_sentence.strip(",")
     else:
         source_sentence = source_sentence.text
 
@@ -70,9 +70,7 @@ def get_constrained_translation_one_subject(source_sentence, constrained_sentenc
 
 
 def generate_translation_with_constrained(source_sentence, constrained_gender):
-    source_sentence = source_sentence.strip(",").strip(".").strip() + "."
-    constrained_gender = constrained_gender.strip(",").strip()
-
+    constrained_gender = constrained_gender.strip()
     input_ids = tokenizer(source_sentence, return_tensors="pt").input_ids
     
     force_words_ids = tokenizer(
@@ -91,7 +89,6 @@ def generate_translation_with_constrained(source_sentence, constrained_gender):
     return most_likely
 
 def generate_translation_with_gender_constrained(source_sentence, constrained_gender):
-    source_sentence = source_sentence.strip(",").strip(".").strip() + "."
     constrained_gender = constrained_gender.strip(",").strip()
     
     input_ids = tokenizer(source_sentence, return_tensors="pt").input_ids
