@@ -83,8 +83,8 @@ def combine_contrained_translations(translations, constrained_splitted, source_s
     punctuation = constrained_splitted[-1][-1]
     first, second = translations
     
-    print("translations: ----->", translations)
-    print("constrained_splitted: ----->", constrained_splitted)
+    # print("translations: ----->", translations)
+    # print("constrained_splitted: ----->", constrained_splitted)
     word_alignments = get_word_alignment_pairs(first.strip(), second.strip(), model=model, matching_methods=matching_methods, align=align)
     new_sentence = ""
     for first_sentence, second_sentence in word_alignments:
@@ -113,7 +113,7 @@ def combine_contrained_translations(translations, constrained_splitted, source_s
             
     if len(new_sentence.strip().split(' ')) < len(word_alignments):
         # model_translation = get_best_translation(source_sentence.text_with_ws)
-        print("ENTROU AQUI")
+        # print("ENTROU AQUI")
         model_translation = get_best_translation(source_sentence)
         model_alignment = get_word_alignment_pairs(model_translation.strip("."), new_sentence, matching_methods="m", align="mwmf")
         return align_with_model(model_alignment, new_sentence)

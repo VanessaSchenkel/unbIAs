@@ -30,8 +30,10 @@ def get_word_alignment_pairs(first_sentence, second_sentence, model="bert-base-u
     return list(word_align_pairs) 
 
 def format_sentences(first_sentence, second_sentence):
-    sent1 = first_sentence.split() if type(first_sentence) == str else first_sentence.text.split()
-    sent2 = second_sentence.split() if type(second_sentence) == str else second_sentence.text.split()
+    # sent1 = first_sentence.strip(".").split()
+    # sent2 = second_sentence.strip(".").split()
+    sent1 = first_sentence.strip(".").split() if type(first_sentence) == str else first_sentence.text.strip(".").split()
+    sent2 = second_sentence.strip(".").split() if type(second_sentence) == str else second_sentence.text.strip(".").split()
 
     return sent1, sent2
 

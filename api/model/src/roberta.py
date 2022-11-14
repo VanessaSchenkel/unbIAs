@@ -1,6 +1,6 @@
 import torch
 
-from spacy_utils import get_pronoun_on_sentence
+from spacy_utils import get_only_subject_sentence, get_pronoun_on_sentence
 
 def get_disambiguate_pronoun(sentence, pronoun):
     roberta = torch.hub.load('pytorch/fairseq', 'roberta.large.wsc', user_dir='examples/roberta/wsc', verbose=False)
@@ -18,14 +18,15 @@ def get_disambiguate_pronoun(sentence, pronoun):
     # print("sentence_formatted::::", sentence_formatted)
     try:
         person = roberta.disambiguate_pronoun(sentence_formatted)
-        print("***********************")
-        print("PERSON:", person)
-        print("***********************")
+        # print("***********************")
+        # print("PERSON:", person)
+        # print("***********************")
 
         return person
     except:
-        print("ROBERTA EXCEPTION")
-        return pronoun.text
+        # print("ROBERTA EXCEPTION")
+        nsubj = get_only_subject_sentence(sentence)
+        return nsubj.text
         
 
 def get_subject_source(source_sentence):
@@ -35,7 +36,7 @@ def get_subject_source(source_sentence):
         subject = get_disambiguate_pronoun(source_sentence, pronoun)
         subjects.append(subject)
     
-    print("SUBJECTS", subjects)
+    # print("SUBJECTS", subjects)
     sub_split = subjects[0].split()[-1]
     return sub_split
 

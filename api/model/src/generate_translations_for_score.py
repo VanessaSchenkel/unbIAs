@@ -18,64 +18,66 @@ from format_translations import format_sentence, format_translations_subjs, shou
 from word_alignment import get_align_people, get_people_model, get_people_to_neutral_and_people_google, get_subject_translated_aligned, get_translations_aligned_model_google
 
 def generate_translations_for_score(source_sentence, google_translation):
-        if ' ' not in source_sentence.text.strip():
-            return get_translation_for_one_word(source_sentence.text, google_translation.text)
+        return generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence, google_translation)
+    
+        # if ' ' not in source_sentence.text.strip():
+        #     return get_translation_for_one_word(source_sentence.text, google_translation.text)
 
-        subjects = get_nsubj_sentence(source_sentence)
-        pronoun_list = get_pronoun_on_sentence(source_sentence)
-        pronoun_list_it = get_pronoun_on_sentence_with_it(source_sentence)
-        gender = get_sentence_gender(source_sentence)
-        people_source = get_people_source(source_sentence)
+        # subjects = get_nsubj_sentence(source_sentence)
+        # pronoun_list = get_pronoun_on_sentence(source_sentence)
+        # pronoun_list_it = get_pronoun_on_sentence_with_it(source_sentence)
+        # gender = get_sentence_gender(source_sentence)
+        # people_source = get_people_source(source_sentence)
             
-        is_all_same_pronoun = is_all_equal(pronoun_list)
-        is_all_same_subject = is_all_equal(subjects)
+        # is_all_same_pronoun = is_all_equal(pronoun_list)
+        # is_all_same_subject = is_all_equal(subjects)
         
-        print("subjects: ", subjects,  "pronoun_list ", pronoun_list, "pronoun_list_it: ", pronoun_list_it, "gender: ", gender, "people_source: ", people_source)
+        # print("subjects: ", subjects,  "pronoun_list ", pronoun_list, "pronoun_list_it: ", pronoun_list_it, "gender: ", gender, "people_source: ", people_source)
 
-        for token in source_sentence:
-            print("---->", token, " | ", token.pos_, " | ", token.tag_, " | ", token.dep_, " | ", token.head , " | ", token.morph)
+        # for token in source_sentence:
+        #     print("---->", token, " | ", token.pos_, " | ", token.tag_, " | ", token.dep_, " | ", token.head , " | ", token.morph)
 
-        if is_all_same_pronoun and is_all_same_subject and len(pronoun_list_it) > 0 and len(subjects) > 0 and len(people_source) <= len(pronoun_list_it) and len(people_source) > 0:
-            print("-------> ENTROU 1")
-            if is_neutral(pronoun_list, gender):
-                print("entrou neutro")
-                # return generate_translation_without_people(source_sentence, google_translation)
-                return generate_translation_for_one_subj_neutral(source_sentence, google_translation)
+        # if is_all_same_pronoun and is_all_same_subject and len(pronoun_list_it) > 0 and len(subjects) > 0 and len(people_source) <= len(pronoun_list_it) and len(people_source) > 0:
+        #     print("-------> ENTROU 1")
+        #     if is_neutral(pronoun_list, gender):
+        #         print("entrou neutro")
+        #         # return generate_translation_without_people(source_sentence, google_translation)
+        #         return generate_translation_for_one_subj_neutral(source_sentence, google_translation)
 
-            return generate_translation_for_one_subj(source_sentence, google_translation)
+        #     return generate_translation_for_one_subj(source_sentence, google_translation)
         
-        elif len(gender) == 0 and len(set(pronoun_list)) == 0 and len(subjects) == 0:
-            print("-------> ENTROU 2")
-            # return generate_translation_without_people(source_sentence, google_translation)
-            return generate_translation_for_sentence_without_pronoun_and_gender(source_sentence, google_translation)
+        # elif len(gender) == 0 and len(set(pronoun_list)) == 0 and len(subjects) == 0:
+        #     print("-------> ENTROU 2")
+        #     # return generate_translation_without_people(source_sentence, google_translation)
+        #     return generate_translation_for_sentence_without_pronoun_and_gender(source_sentence, google_translation)
 
-        elif (len(gender) == 0 and len(set(pronoun_list)) == 0 and len(subjects) > 0) or (len(gender) == 1 and len(pronoun_list) == 1 and len(people_source) == 0):
-            print("-------> ENTROU 3")
-            return generate_translation_with_subject_and_neutral(source_sentence, google_translation)    
+        # elif (len(gender) == 0 and len(set(pronoun_list)) == 0 and len(subjects) > 0) or (len(gender) == 1 and len(pronoun_list) == 1 and len(people_source) == 0):
+        #     print("-------> ENTROU 3")
+        #     return generate_translation_with_subject_and_neutral(source_sentence, google_translation)    
             
-        elif len(set(pronoun_list)) == 1 and all("it" == elem.text for elem in pronoun_list_it):
-            print("-------> ENTROU 4")
-            return generate_translation_it(source_sentence, google_translation)
+        # elif len(set(pronoun_list)) == 1 and all("it" == elem.text for elem in pronoun_list_it):
+        #     print("-------> ENTROU 4")
+        #     return generate_translation_it(source_sentence, google_translation)
         
-        elif len(pronoun_list) > 0 and (len(people_source) > len(pronoun_list) or len(people_source) > len(gender) or (len(gender) > 1 and 'Neut' in gender)):
-            print("-------> ENTROU 5")
-            return generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence, google_translation)
+        # elif len(pronoun_list) > 0 and (len(people_source) > len(pronoun_list) or len(people_source) > len(gender) or (len(gender) > 1 and 'Neut' in gender)):
+        #     print("-------> ENTROU 5")
+        #     return generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence, google_translation)
 
-        elif len(subjects) == len(pronoun_list) and len(subjects) > 0 and len(gender) > 1:
-            print("-------> ENTROU 6")
-            return generate_translation_more_subjects(source_sentence, subjects, google_translation, people_source)
+        # elif len(subjects) == len(pronoun_list) and len(subjects) > 0 and len(gender) > 1:
+        #     print("-------> ENTROU 6")
+        #     return generate_translation_more_subjects(source_sentence, subjects, google_translation, people_source)
         
-        elif len(subjects) > len(pronoun_list) and (len(people_source) == 0 or len(pronoun_list_it) == 0):
-            print("-------> ENTROU 7")
-            return generate_translation_without_people(source_sentence,  google_translation)
-        else:
-            print("-------> ENTROU ELSE")
-            return generate_translation_for_sentence_without_pronoun_and_gender(source_sentence, google_translation)  
+        # elif len(subjects) > len(pronoun_list) and (len(people_source) == 0 or len(pronoun_list_it) == 0):
+        #     print("-------> ENTROU 7")
+        #     return generate_translation_without_people(source_sentence,  google_translation)
+        # else:
+        #     print("-------> ENTROU ELSE")
+        #     return generate_translation_for_sentence_without_pronoun_and_gender(source_sentence, google_translation)  
 
 
 def generate_translation_without_people(source_sentence,  google_translation):
     constrained_splitted = get_constrained_without_people(google_translation)
-    print("constrained_splitted", constrained_splitted)
+    # print("constrained_splitted", constrained_splitted)
     
     translations = []
     for constrained in constrained_splitted:
@@ -127,7 +129,7 @@ def get_translation_for_one_word(source_sentence: str, google_translation):
 
 
 def generate_translation_for_one_subj_neutral(source_sentence, google_translation):
-    print("AQUI")
+    # print("AQUI")
     translation_nlp = google_translation   
     
     people = get_people(translation_nlp)

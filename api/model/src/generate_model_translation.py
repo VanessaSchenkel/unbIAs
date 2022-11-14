@@ -7,7 +7,8 @@ import logging
 from docopt import docopt
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
-model_name = 'VanessaSchenkel/pt-unicamp-handcrafted'
+# model_name = 'VanessaSchenkel/pt-unicamp-handcrafted'
+model_name = 'VanessaSchenkel/pt-unicamp-handcrafted-puro'
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 

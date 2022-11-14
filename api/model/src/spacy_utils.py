@@ -140,8 +140,8 @@ def get_people_source(sentence):
 def get_translation_with_punctuation(sentence, punctuation = "."):
     final = get_nlp_pt(sentence)[-1]
     
-    print("FINAL:::", final)
-    print("FINAL::: is_punct ", final.is_punct)
+    # print("FINAL:::", final)
+    # print("FINAL::: is_punct ", final.is_punct)
     
     if not final.is_punct or final.text == "\"" or final.text == " \"":
         sentence += punctuation
