@@ -1,5 +1,5 @@
 """Usage:
-    generate_model_translation.py --sentence=SENTENCE [--constrained=CONTRAINED][--debug]
+    generate_model_translation.py --sentence=SENTENCE [--constraints=CONTRAINED][--debug]
 """
 
 # External imports
@@ -8,7 +8,6 @@ from docopt import docopt
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 model_name = 'VanessaSchenkel/pt-unicamp-handcrafted'
-# model_name = 'VanessaSchenkel/pt-unicamp-handcrafted-puro'
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
@@ -45,32 +44,7 @@ def get_best_translation(source_sentence, num_return_sequences=1):
 
     return translation_model
 
-
-def get_constrained_translation_one_subject(source_sentence, constrained_sentence):
-    source_sentence = source_sentence.strip(",").strip(".").strip() + "."
-    
-    input_ids = tokenizer(source_sentence, return_tensors="pt").input_ids
-
-    force_words_ids = [
-        tokenizer(constrained_sentence, add_special_tokens=False).input_ids,
-    ]
-
-    outputs = model.generate(
-        input_ids,
-        force_words_ids=force_words_ids,
-        num_beams=50,
-        num_return_sequences=2,
-        max_new_tokens=50
-    )
-    
-    
-    more_likely = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    less_likely = tokenizer.decode(outputs[1], skip_special_tokens=True)
-
-    return more_likely, less_likely
-
-
-def generate_translation_with_constrained(source_sentence, constrained_gender):
+def generate_translation_with_constraints(source_sentence, constrained_gender):
     constrained_gender = constrained_gender.strip()
     input_ids = tokenizer(source_sentence, return_tensors="pt").input_ids
     
@@ -114,7 +88,7 @@ if __name__ == "__main__":
     # Parse command line arguments
     args = docopt(__doc__)
     sentence_fn = args["--sentence"]
-    constrained_fn = args["--constrained"]
+    constrained_fn = args["--constraints"]
     debug = args["--debug"]
 
     if debug:

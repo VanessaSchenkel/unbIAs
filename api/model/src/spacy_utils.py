@@ -18,10 +18,6 @@ def get_nlp_en(sentence):
 def get_nlp_pt(sentence):
     return nlp(sentence)
 
-def has_gender_in_source(sentence):
-    sentence_nlp = get_nlp_en(sentence)
-    return len(get_sentence_gender(sentence_nlp)) > 0
-
 def get_pronoun_on_sentence(sentence):
     pronoun_list = []
     for token in sentence:
@@ -54,7 +50,6 @@ def get_noun_sentence(sentence):
             noun_list.append(token)
 
     return noun_list
-
 
 def get_only_subject_sentence(sentence):
     for token in sentence:
@@ -140,9 +135,6 @@ def get_people_source(sentence):
 def get_translation_with_punctuation(sentence, punctuation = "."):
     final = get_nlp_pt(sentence)[-1]
     
-    # print("FINAL:::", final)
-    # print("FINAL::: is_punct ", final.is_punct)
-    
     if not final.is_punct or final.text == "\"" or final.text == " \"":
         sentence += punctuation
     
@@ -153,19 +145,7 @@ def get_sentence_with_punctuation(sentence):
     if not final.is_punct and not final.text == "\"":
         sentence += "."
     
-    return get_nlp_en(sentence)
-
-
-def get_words_to_neutral_and_index_to_replace(translation, people_to_neutral):
-    words_to_neutral = []
-    index_to_replace = []
-    
-    for index, token in enumerate(translation):
-            if token.head.text in people_to_neutral or token.head.text[:-1] in people_to_neutral or token.head.lemma_ in people_to_neutral or token.text in people_to_neutral or token.text[:-1] in people_to_neutral or token.lemma_ in people_to_neutral:
-                words_to_neutral.append(token)
-                index_to_replace.append(index)  
-    
-    return words_to_neutral, index_to_replace            
+    return get_nlp_en(sentence)          
 
 def get_all_information(sentence):
     for token in sentence:

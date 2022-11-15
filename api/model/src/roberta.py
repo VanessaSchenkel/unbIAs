@@ -27,16 +27,14 @@ def get_disambiguate_pronoun(sentence, pronoun):
         # print("ROBERTA EXCEPTION")
         nsubj = get_only_subject_sentence(sentence)
         return nsubj.text
-        
 
-def get_subject_source(source_sentence):
+def get_roberta_subject(source_sentence):
     pronouns = get_pronoun_on_sentence(source_sentence)
     subjects = []
     for pronoun in pronouns:
         subject = get_disambiguate_pronoun(source_sentence, pronoun)
         subjects.append(subject)
-    
-    # print("SUBJECTS", subjects)
+
     sub_split = subjects[0].split()[-1]
     return sub_split
 

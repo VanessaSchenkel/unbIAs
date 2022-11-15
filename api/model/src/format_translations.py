@@ -1,3 +1,4 @@
+from gender_inflection import get_just_possible_words
 from spacy_utils import get_nlp_en
 
 def format_question(source_sentence):
@@ -30,9 +31,6 @@ def should_remove_last_word(sentence):
 
 def format_translations_subjs(index_to_replace, sentence, inflections):
     translations = []
-    
-    # print("---> sentence", sentence)
-
     for id in range(3):
         new_sentence = ""
         cont = 0
@@ -43,8 +41,36 @@ def format_translations_subjs(index_to_replace, sentence, inflections):
                 new_sentence += inflections[cont][id] + " "
                 cont = cont + 1
         sentence_formatted = new_sentence[0].capitalize() + new_sentence[1:]
-        # print("---> sentence_formatted", sentence_formatted)
-        translations.append(sentence_formatted)
+        translation = format_translation(sentence_formatted)
+        translations.append(translation)
 
-    # print("---> translations", translations)
     return translations
+
+def get_formatted_translations_nsubj_and_pobj_with_pronoun(translation_nlp, people_to_neutral, people_control_model):
+    words_to_neutral = []
+    index_to_replace = []
+    for index, token in enumerate(translation_nlp):
+            if token.head.text in people_to_neutral or token.head.text[:-1] in people_to_neutral or token.head.lemma_ in people_to_neutral or token.text in people_to_neutral or token.text[:-1] in people_to_neutral or token.lemma_ in people_to_neutral :
+                words_to_neutral.append(token)
+                index_to_replace.append(index)
+
+    inflections = get_just_possible_words(words_to_neutral)
+    first_sentence, second_sentence, neutral  = format_translations_subjs(index_to_replace, translation_nlp, inflections)
+    translation = format_translations_subjs(index_to_replace, translation_nlp, inflections)
+    
+    sentence_more_likely = [sentence for sentence in translation if people_control_model in sentence]        
+    if second_sentence == sentence_more_likely:
+        more_likely = second_sentence
+        less_likely = first_sentence
+    else:
+        more_likely = first_sentence
+        less_likely = second_sentence
+        
+    return more_likely, less_likely, neutral
+
+def format_translation(translation):
+    format_comma = translation.replace(" ,", ",")
+    format_dot = format_comma.replace(" .", ".")
+    format_semicolon = format_dot.replace(" ;", ";")
+    
+    return format_semicolon

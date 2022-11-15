@@ -28,27 +28,34 @@ export function Home() {
 
   const handleSendQuestion = (event) => {
     event.preventDefault();
-    setSpinner(true);
+    // setSpinner(true);
 
-    // setNewTranslation({ possible_words: ["Cão", "Cadela", "Cã[x]"] });
+    setNewTranslation({
+      first_option:
+        "O xerife questionou a caixa porque ela havia pegado o dinheiro.",
+      second_option:
+        "A xerife questionou a caixa porque ela havia pegado o dinheiro.",
+      neutral:
+        "[x] xerife questionou a caixa porque ela havia pegado o dinheiro.",
+    });
 
-    if (newTextToTranslate.trim().length > 0) {
-      const requestOptions = {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source_sentence: newTextToTranslate }),
-      };
+    // if (newTextToTranslate.trim().length > 0) {
+    //   const requestOptions = {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify({ source_sentence: newTextToTranslate }),
+    //   };
 
-      fetch("/translate", requestOptions)
-        .then((response) => response.json())
-        .then((data) => setNewTranslation(data))
-        .then((data) => setSpinner(false))
-        .catch((err) => {
-          console.log(err);
-          setSpinner(false);
-          navigate("/error");
-        });
-    }
+    //   fetch("/translate", requestOptions)
+    //     .then((response) => response.json())
+    //     .then((data) => setNewTranslation(data))
+    //     .then((data) => setSpinner(false))
+    //     .catch((err) => {
+    //       console.log(err);
+    //       setSpinner(false);
+    //       navigate("/error");
+    //     });
+    // }
   };
 
   useEffect(() => {

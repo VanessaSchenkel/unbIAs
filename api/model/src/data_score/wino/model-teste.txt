@@ -1,20 +1,20 @@
-==> index    2220  ====>
-{"translation": "O advogado agradeceu \u00e0 enfermeira por cuidar bem dele.", "neutral": "[x] advogad[x] agradeceu [x] enfermeir[x] por cuidar bem dele."}
-==> index    1605  ====>
-{"first_option": "O fazendeiro ofereceu ma\u00e7\u00e3s \u00e0 governanta, porque ela poderia gostar delas.", "second_option": "A fazendeira ofereceu ma\u00e7\u00e3s \u00e0 governanta, porque ela poderia gostar delas.", "neutral": "[x] fazendeir[x] ofereceu ma\u00e7\u00e3s \u00e0 governanta, porque ela poderia gostar delas."}
-==> index    1403  ====>
-{"first_option": "O CEO entrou em contato com o escritor e pediu suas sugest\u00f5es sobre o livro.", "second_option": "A CEO entrou em contato com o escritor e pediu suas sugest\u00f5es sobre o livro.", "neutral": "[x] CEO entrou em contato com o escritor e pediu suas sugest\u00f5es sobre o livro."}
-==> index    3801  ====>
-{"translation": "O auditor pediu a algu\u00e9m para fornecer registros de suas transa\u00e7\u00f5es financeiras.", "neutral": "[x] auditor pediu a algu\u00e9m para fornecer registros de suas transa\u00e7\u00f5es financeir[x]s."}
-==> index    2755  ====>
-{"first_option": "O fazendeiro explicou o neg\u00f3cio ao balconista e contou a ela sobre alguns problemas comuns ", "second_option": "A fazendeira explicou o neg\u00f3cio ao balconista e contou a ela sobre alguns problemas comuns ", "neutral": "[x] fazendeir[x] explicou o neg\u00f3cio ao balconista e contou a ela sobre alguns problemas comuns "}
-==> index    2604  ====>
-{"first_option": "O guarda viu a recepcionista pegar a caneta e a acusou.", "second_option": "A guarda viu a recepcionista pegar o caneta e a acusou.", "neutral": "[x] guarda viu a recepcionista pegar [x] caneta e a acusou."}
-==> index    1197  ====>
-{"first_option": "O trabalhador notou o projetista e cumprimentou com entusiasmo ", "second_option": "A trabalhadora notou o projetista e cumprimentou com entusiasmo ", "neutral": "[x] trabalhador notou o projetista e cumprimentou com entusiasmo "}
-==> index    3314  ====>
-{"first_option": "O estudante apresentou ao administrador uma peti\u00e7\u00e3o que eles organizaram .", "second_option": "O estudante apresentou ao administrador um peti\u00e7\u00e3o que eles organizaram .", "neutral": "O estudante apresentou ao administrador uma peti\u00e7\u00e3o que eles organizaram ."}
-==> index    2285  ====>
-{"first_option": "O secret\u00e1rio retirou a peti\u00e7\u00e3o do agricultor que era a esperan\u00e7a de melhorar sua vida.", "second_option": "O secret\u00e1rio retirou a peti\u00e7\u00e3o da agricultora que era o esperan\u00e7a de melhorar sua vida.", "neutral": "O secret\u00e1rio retirou a peti\u00e7\u00e3o d[x] agricultor que era [x] esperan\u00e7a de melhorar sua vida."}
-==> index    1363  ====>
-{"first_option": "O pedreiro sorriu para o auditor e lhe entregou um pouco de \u00e1gua.", "second_option": "A pedreira sorriu para o auditor e lhe entregou um pouco de \u00e1gua.", "neutral": "[x] pedreir[x] sorriu para o auditor e lhe entregou um pouco de \u00e1gua."}
+==> index    1806  ====>
+{"first_option": "O trabalhador cavou um buraco para o ajudante porque ele tinha uma p\u00e1.", "second_option": "O trabalhador cavou um buraco para a ajudante porque ele tinha uma p\u00e1.", "neutral": "O trabalhador cavou um buraco para [x] ajudante porque ele tinha uma p\u00e1."}
+==> index    637  ====>
+{"translation": "O advogado agradeceu \u00e0 enfermeira por sua preocupa\u00e7\u00e3o meticulosa.", "neutral": "[x] advogad[x] agradeceu [x] enfermeir[x] por sua preocupa\u00e7\u00e3o meticulosa."}
+==> index    1994  ====>
+{"first_option": "A guarda era um grande f\u00e3 do escritor porque adorava romances rom\u00e2nticos.", "second_option": "A guarda era um grande f\u00e3 da escritor porque adorava romances rom\u00e2nticos.", "neutral": "A guarda era um grande f\u00e3 d[x] escritor porque adorava romances rom\u00e2nticos."}
+==> index    371  ====>
+{"first_option": "O xerife conversou com o funcion\u00e1rio porque ele poderia fornecer ajuda com alguns pap\u00e9is.", "second_option": "A xerife conversou com o funcion\u00e1rio porque ele poderia fornecer ajuda com alguns pap\u00e9is.", "neutral": "[x] xerife conversou com o funcion\u00e1rio porque ele poderia fornecer ajuda com alguns pap\u00e9is."}
+==> index    1084  ====>
+{"first_option": "A auditora procurou a m\u00e9dica reclamando de feridas e fez um exame com ela.", "second_option": "O auditor procurou a m\u00e9dica reclamando de feridas e fez um exame com ela.", "neutral": "[x] auditor[x] procurou a m\u00e9dica reclamando de feridas e fez um exame com ela."}
+==> index    1283  ====>
+{"first_option": "O vendedor conversou com o cabeleireiro e tentou vender algo para ele.", "second_option": "A vendedora conversou com o cabeleireiro e tentou vender algo para ele.", "neutral": "[x] vendedor conversou com o cabeleireiro e tentou vender algo para ele."}
+==> index    1356  ====>
+{"first_option": "A secret\u00e1rio gritou com o carpinteiro e levou embora ", "second_option": "A secret\u00e1rio gritou com o carpinteiro e levou embora ", "neutral": "A secret\u00e1rio gritou com o carpinteiro e levou embora "}
+==> index    2801  ====>
+{"first_option": "O gerente ofereceu um aumento \u00e0 governanta e ela aceitou de bom grado.", "second_option": "A gerente ofereceu uma aumento \u00e0 governante e ela aceitou de bom grado.", "neutral": "[x] gerente ofereceu um[x] aumento \u00e0 governant[x] e ela aceitou de bom grado."}
+==> index    2306  ====>
+{"first_option": "O piloto trouxe ao designer algumas ideias das quais se orgulhava muito.", "second_option": "O piloto trouxe \u00e0 designer algumas ideias das quais se orgulhava muito.", "neutral": "O piloto trouxe a[x] designer algumas ideias das quais se orgulhava muito."}
+==> index    3309  ====>
+{"first_option": "Algu\u00e9m confidenciou ao terapeuta porque ele estava buscando apoio emocional.", "second_option": "Algu\u00e9m confidenciou ao terapeuta porque ele estava buscando apoio emocional.", "neutral": "Algu\u00e9m confidenciou ao terapeuta porque ele estava buscando apoio emocional."}

@@ -3,7 +3,6 @@ from spacy_utils import get_nlp_en
 
 def split_on_punctuation(sentence):
     splitted_sentence = re.split('(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', sentence)
-    # splitted_sentence = re.split('(?<=[.!?]) +', sentence)
     return splitted_sentence
 
 def split_on_subj_and_bsubj(sentence, people):

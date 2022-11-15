@@ -2,7 +2,6 @@
     gender_inflection.py --word=WORD [--debug]
 """
 # External imports
-import itertools
 import logging
 from docopt import docopt
 import ast
@@ -11,14 +10,11 @@ from pathlib import Path
 
 # Local imports
 from generate_neutral import make_neutral
-from spacy_utils import get_nlp_pt, get_translation_with_punctuation, get_word_pos_and_morph
+from spacy_utils import get_nlp_pt, get_word_pos_and_morph
 
 def get_gender_inflections(word):
     gender_inflections = {}
-    # word = word.rstrip(".").lower()
-    # word = get_nlp_pt(word)
     text_raw, pos, morph = get_word_pos_and_morph(word)
-    # print("====", word.text, "->", word.text.lower(), "->", word.pos_, "->", word.morph)
     text = text_raw.lower()
     original_text = text
     gender = str(morph.get("Gender")).lower()
@@ -83,19 +79,13 @@ def get_matches(text, pos):
 
 def format_sentence_inflections(possible_words):
     combined = [j for i in zip(*possible_words) for j in i]
-    
-    # print("combined", combined)
-
     last_word = possible_words[-1][-1]
     joined = " ".join(combined)
     joined_replace_comma = joined.replace(" ,", ",")
-    joined_replace_question_marks = joined_replace_comma.replace(" \"", "\"").replace("\" ", "\"")
+    joined_replace_dot = joined_replace_comma.replace(" .", ".")
+    joined_replace_question_marks = joined_replace_dot.replace(" \"", "\"").replace("\" ", "\"")
     splitted_by_dot = joined_replace_question_marks.split(last_word)
     
-    # print("splitted_by_dot", splitted_by_dot)
-    # print("last_word", last_word)
-    # print("possible_words", possible_words)
-
     first_option = splitted_by_dot[0].strip()
     first_word = first_option[0].capitalize() + " " if len(first_option) == 1 else first_option[0].capitalize() 
     first_sentence = first_word + first_option[1:] + last_word
@@ -108,18 +98,12 @@ def format_sentence_inflections(possible_words):
     first_word = neutral[0].capitalize() + " " if len(neutral) == 1 else neutral[0].capitalize() 
     neutral_sentence = first_word + neutral[1:] + last_word
     
-    # print("----> first_sentence", first_sentence)
-    # print("----> second_sentence", second_sentence)
-    # print("----> neutral_sentence", neutral_sentence)
-    
     return first_sentence, second_sentence, neutral_sentence
 
 
 def get_just_possible_words(translation):
-    # print("::::: translation possible", translation)
     forms_list = []
     for word in translation:
-        # print("====", word.text, "->", word.text.lower(), "->", word.pos_)
         if word.pos_ == "CCONJ" or word.pos_ == "PUNCT" or word.pos_ == "VERB":
             forms_list.append([word.text, word.text, word.text])
         else:
@@ -140,6 +124,7 @@ def get_just_possible_words(translation):
                     forms.append(inflections['word'])
 
             forms_list.append(forms)
+    
     return forms_list
 
 

@@ -30,8 +30,6 @@ def get_word_alignment_pairs(first_sentence, second_sentence, model="bert-base-u
     return list(word_align_pairs) 
 
 def format_sentences(first_sentence, second_sentence):
-    # sent1 = first_sentence.strip(".").split()
-    # sent2 = second_sentence.strip(".").split()
     sent1 = first_sentence.strip(".").split() if type(first_sentence) == str else first_sentence.text.strip(".").split()
     sent2 = second_sentence.strip(".").split() if type(second_sentence) == str else second_sentence.text.strip(".").split()
 
@@ -53,22 +51,10 @@ def get_align_people(source_sentence, translation_sentence):
         if token.text in people_align:
             people_list.append(token)
 
-    return people_list   
-
-def get_subject_translated_aligned(source_sentence, translations_aligned, subjects):
-        alignment_with_constrained = get_word_alignment_pairs(source_sentence.text, translations_aligned, model="bert", matching_methods = "i", align = "itermax")
-        sub_split = subjects[0].split()
-        subj_translated = ""
-        
-        for first_sentence, second_sentence in alignment_with_constrained: 
-            if first_sentence in sub_split:
-                subj_translated += second_sentence + " "
-                
-        return subj_translated     
+    return people_list    
 
 def get_translations_aligned_model_google(translation_google, translations_aligned, subj_translated):
         alignment_with_translation = get_word_alignment_pairs(translation_google.text, translations_aligned, model="bert", matching_methods = "i", align = "itermax")
-        print("ALIGMENT ", alignment_with_translation)
         translated = ""
         subj_translated_split = subj_translated.split()
         for first_sentence, second_sentence in alignment_with_translation: 
@@ -79,31 +65,35 @@ def get_translations_aligned_model_google(translation_google, translations_align
                 translated += first_sentence + " "
 
         translated_nlp = get_translation_with_punctuation(translated)
-        return translated_nlp
+        return translated_nlp  
 
-def get_people_to_neutral_and_people_google(source_sentence, translation_nlp, people_to_neutral_source, sub_split):
-    people_to_neutral= []
-    alignment = get_word_alignment_pairs(source_sentence.text, translation_nlp.text, model="bert", matching_methods = "i", align = "itermax")
-    people_google = ""
-    
-    for first_sentence, second_sentence in alignment:
-      first_sentence_clean = first_sentence.split('\'')[0]
-      if first_sentence in people_to_neutral_source or first_sentence_clean in people_to_neutral_source:
-        people_to_neutral.append(second_sentence)
-      elif first_sentence == sub_split:
-          people_google = second_sentence
-    
-    return people_to_neutral, people_google      
-
-def get_people_model(source_sentence, translation_model_nlp, subject_source):
+def get_people_model_people_control_model(source_sentence, translation_model_nlp, people_to_neutral_source, sub_split):
     alignment_model = get_word_alignment_pairs(source_sentence.text, translation_model_nlp.text, model="bert", matching_methods = "i", align = "itermax")
     people_model = ""
+    people_control_model = ""
     
     for first_sentence, second_sentence in alignment_model:
-      if first_sentence == subject_source:
-        people_model = second_sentence
+        if first_sentence in people_to_neutral_source:
+            people_control_model = second_sentence.strip(",").strip(".")
+        if first_sentence == sub_split:
+            people_model = second_sentence.strip(",").strip(".")
+
+    return people_model, people_control_model
+
+def get_people_google_people_to_neutral(source_sentence, translation_nlp, people_to_neutral_source, sub_split):
+    people_to_neutral= []
+    people_google = ""
     
-    return people_model 
+    alignment = get_word_alignment_pairs(source_sentence.text, translation_nlp.text, model="bert", matching_methods = "i", align = "itermax")
+    
+    for first_sentence, second_sentence in alignment:
+      first_sent = first_sentence.split('\'')[0]
+      if first_sentence in people_to_neutral_source or first_sent in people_to_neutral_source:
+        people_to_neutral.append(second_sentence.strip(",").strip("."))
+      elif first_sentence == sub_split:
+          people_google = second_sentence
+          
+    return people_google,  people_to_neutral  
 
 if __name__ == "__main__":
     # Parse command line arguments

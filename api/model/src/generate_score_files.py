@@ -1,5 +1,5 @@
 """Usage:
-    translate_sentences_wino.py [--debug]
+    generate_score_files.py [--debug]
 """
 
 # External imports
@@ -9,20 +9,20 @@ import json
 import random
 
 # Local imports
-from generate_translations_for_score import generate_translations_for_score
+from generate_translations import generate_translations
 from spacy_utils import get_sentence_with_punctuation, get_translation_with_punctuation
-
+from split_sentence import split_on_punctuation
 
 def generate_translations_test():    
     english_sentences = get_english_sentences()
     google_translation = get_google_translations()
     
-    random_index = random.sample(range(1, 3888), 10)
+    random_index = random.sample(range(0, 3888), 10)
 
     for index in random_index:
         source_sentence = get_sentence_with_punctuation(english_sentences[index])
         translation_google = get_translation_with_punctuation(google_translation[index])
-        translation = generate_translations_for_score(source_sentence, translation_google)
+        translation = generate_translations(source_sentence, translation_google)
         
         name_file = './data_score/wino/model-teste.txt'
         with open(name_file, 'a') as gen_file:
