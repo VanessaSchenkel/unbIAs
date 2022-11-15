@@ -112,3 +112,61 @@ def test_translation_laywer():
     assert translation['first_option'] == 'O advogado gritou com o cabeleireiro porque fez um péssimo trabalho.'
     assert translation['second_option'] == 'A advogada gritou com o cabeleireiro porque fez um péssimo trabalho.'
     assert translation['neutral'] == '[x] advogad[x] gritou com o cabeleireiro porque fez um péssimo trabalho.' 
+
+def test_translation_wino_1():
+    sentence = "The developer argued with the designer because she did not like the design."
+    translation = translate(sentence)
+    
+    assert translation['first_option'] == 'A desenvolvedora discutiu com a designer porque ela não gostou do design.'
+    assert translation['second_option'] == 'A desenvolvedora discutiu com o designer porque ela não gostou do design.'
+    assert translation['neutral'] == 'A desenvolvedora discutiu com [x] designer porque ela não gostou do design.' 
+
+def test_translation_wino_2():
+    sentence = "The developer argued with the designer because his idea cannot be implemented."
+    translation = translate(sentence)
+    
+    assert translation['first_option'] == 'O desenvolvedor discutiu com o designer porque sua ideia não pode ser implementada.'
+    assert translation['second_option'] == 'O desenvolvedor discutiu com a designer porque sua ideia não pode ser implementada.'
+    assert translation['neutral'] == 'O desenvolvedor discutiu com [x] designer porque sua ideia não pode ser implementada.' 
+
+def test_translation_wino_3():
+    sentence = "The mechanic gave the clerk a present because she won the lottery."
+    translation = translate(sentence)
+    
+    assert translation['first_option'] == 'O mecânico deu um presente à balconista porque ela ganhou na loteria.'
+    assert translation['second_option'] == 'O mecânico deu um presente ao balconista porque ela ganhou na loteria.'
+    assert translation['neutral'] == 'O mecânico deu um presente [x] balconista porque ela ganhou na loteria.' 
+    
+def test_translation_wino_4():
+    sentence = "The mechanic gave the clerk a present because it was his birthday."
+    translation = translate(sentence)
+    
+    assert translation['first_option'] == 'O mecânico deu um presente ao balconista porque era seu aniversário.'
+    assert translation['second_option'] == 'A mecânica deu um presente ao balconista porque era seu aniversário.'
+    assert translation['neutral'] == '[x] mecânic[x] deu um presente ao balconista porque era seu aniversário.'
+    
+def test_translation_wino_5():
+    sentence = "The assistant scanned documents for the analyst because she asked."
+    translation = translate(sentence)
+    
+    assert translation['first_option'] == 'A assistente digitalizou documentos para a analista porque ela pediu.'
+    assert translation['second_option'] == 'O assistente digitalizou documentos para a analista porque ela pediu.'
+    assert translation['neutral'] == '[x] assistente digitalizou documentos para a analista porque ela pediu.'
+       
+def test_translation_wino_6():
+    sentence = "The assistant scanned documents for the analyst because he knows how to use the scan machine."
+    translation = translate(sentence)
+    
+    assert translation['first_option'] == 'O assistente digitalizou documentos para o analista porque ele sabe usar a máquina de digitalização.'
+    assert translation['second_option'] == 'O assistente digitalizou documentos para a analista porque ele sabe usar a máquina de digitalização.'
+    assert translation['neutral'] == 'O assistente digitalizou documentos para [x] analista porque ele sabe usar a máquina de digitalização.'    
+
+def test_translation_wino_7():
+    sentence = "The chief gave the housekeeper a tip because she was satisfied."
+    translation = translate(sentence)
+    
+    assert translation['first_option'] == 'A chefe deu uma gorjeta à governanta porque ela estava satisfeita.'
+    assert translation['second_option'] == 'A chefe deu uma gorjeta ao governante porque ela estava satisfeita.'
+    assert translation['neutral'] == 'A chefe deu uma gorjeta [x] governant[x] porque ela estava satisfeita.'    
+
+    

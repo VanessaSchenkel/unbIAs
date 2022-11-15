@@ -87,7 +87,8 @@ def get_people_to_neutral_and_people_google(source_sentence, translation_nlp, pe
     people_google = ""
     
     for first_sentence, second_sentence in alignment:
-      if first_sentence in people_to_neutral_source:
+      first_sentence_clean = first_sentence.split('\'')[0]
+      if first_sentence in people_to_neutral_source or first_sentence_clean in people_to_neutral_source:
         people_to_neutral.append(second_sentence)
       elif first_sentence == sub_split:
           people_google = second_sentence

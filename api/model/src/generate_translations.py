@@ -258,12 +258,6 @@ def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
     
     gender_people_model = get_sentence_gender(people_model_nlp)
     
-    # print("GENDER_PEOPLE_MODEL:", gender_people_model)
-    # print("people_model_nlp:", people_model_nlp)
-    # print("people_google_nlp:", people_google_nlp)
-    # print("model_morph:", model_morph)
-    # print("model_google:", model_google)
-
     if (people_google == None or len(people_google) == 0) and len(people_model_nlp) > 0:
         translation_nlp = translation_model_nlp
     elif len(gender_people_model) > 0 and model_morph != model_google: 
@@ -281,73 +275,6 @@ def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
     
     return {"first_option": first_sentence.replace(".", "").strip() + "." , "second_option": second_sentence.replace(".", "").strip() + "." , "neutral": third_sentence.replace(".", "").strip() + "." } 
     
-
-# def generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence):
-#     # translation_nlp = get_google_translation(source_sentence.text_with_ws)
-#     translation_nlp = get_nlp_pt('O motorista deu carona para o faxineiro para que ele ficasse endividado.')
-#     people = get_align_people(source_sentence, translation_nlp)
-#     print("-----------------")
-#     print("PEOPLE:", people)
-
-#     constrained_splitted = split_on_subj_and_bsubj(translation_nlp, people)
-#     print("constrained_splitted:", constrained_splitted)
-#     translations = []
-    
-#     for constrained in constrained_splitted:
-#         constrained_translation = generate_translation_with_gender_constrained(source_sentence.text_with_ws, constrained)
-#         print("constrained_translation:", constrained_translation)
-#         translation = check_constrained_translation(constrained, constrained_translation, source_sentence.text_with_ws)
-#         print("translation:", translation)
-        
-#         translations.append(translation)
-    
-#     print("TRANSLATIONS:", translations)
-#     if len(translations) == 1:
-#         translations_aligned = translations[0]
-#     elif len(translations) == 2:
-#         translations_aligned = combine_contrained_translations(translations, constrained_splitted, source_sentence)
-#     elif len(translations) > 2:
-#         translation = ""
-#         trans_aligned = ""
-#         for index, translation in enumerate(translations):
-#             print("------- INDEX:", index)   
-#             if index == 0:
-#                 print("index == 0")  
-#                 trans_aligned = translations[0]
-#                 print("trans_aligned:", trans_aligned)
-#             elif index < len(translations)-1:
-#                 print("LEN", len(translations))
-#                 print(index < len(translations))
-#                 next_trans = translations[index+1]
-#                 print("next_trans:", next_trans)
-#                 trans = [trans_aligned, next_trans]
-#                 trans_aligned = combine_contrained_translations(trans, constrained_splitted, source_sentence)
-#                 print("trans_aligned:", trans_aligned)
-#             else:
-#                 translation = combine_contrained_translations([trans_aligned, translations[-1]], constrained_splitted, source_sentence)
-#                 print("translations_aligned:", translation)
-#                 translations_aligned =  translation
-#             print("---------------")    
-        
-#     translation_model_constrained = [translations_aligned, translation_nlp.text_with_ws]
-#     translation_nlp_model = get_nlp_pt(translations_aligned)
-#     people_model = get_align_people(source_sentence, translation_nlp_model)
-#     print("people model:", people_model)
-#     people_text = [person.text for person in people_model]
-#     translation_with_constrained = combine_contrained_translations(translation_model_constrained, constrained_splitted, source_sentence, people_model=people_text)    
-#     print("translation_with_constrained:", translation_with_constrained)
-    
-#     pronouns = get_pronoun_on_sentence(source_sentence)
-#     subjects = []
-#     for pronoun in pronouns:
-#         subject = get_disambiguate_pronoun(source_sentence, pronoun)
-#         subjects.append(subject)
-
-#     first_sentence, second_sentence, third_sentence = get_gender_translations(subjects, source_sentence.text_with_ws, translation_with_constrained, people)
-
-#     return {"first_option": first_sentence.replace(".", "").strip() + "." , "second_option": second_sentence.replace(".", "").strip() + "." , "neutral": third_sentence.replace(".", "").strip() + "." } 
-    
-
 def generate_translation_more_subjects(source_sentence, subjects):
     try:
         sentence = format_sentence(source_sentence)

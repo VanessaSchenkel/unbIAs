@@ -5,32 +5,46 @@
 # External imports
 import logging
 from docopt import docopt
-from constrained_beam_search import check_constrained_translation, combine_contrained_translations, combine_translations, get_translations_aligned, get_translations_with_constrained
-from format_translations import format_translations_subjs
-from gender_inflection import get_just_possible_words
-from generate_model_translation import generate_translation, generate_translation_with_gender_constrained
-from generate_translations_for_score import generate_translations_for_score
-from roberta import get_disambiguate_pronoun, get_subject_source
-from spacy_utils import get_morph, get_nlp_en, get_nlp_pt, get_only_subject_sentence, get_people_source, get_pronoun_on_sentence, get_sentence_gender, get_sentence_with_punctuation, get_translation_with_punctuation, get_words_to_neutral_and_index_to_replace
-from split_sentence import split_on_punctuation, split_on_subj_and_bsubj
-from word_alignment import get_align_people, get_people_model, get_people_to_neutral_and_people_google, get_subject_translated_aligned, get_translations_aligned_model_google, get_word_alignment_pairs
+import json
+import random
 
 # Local imports
+from generate_translations_for_score import generate_translations_for_score
+from spacy_utils import get_sentence_with_punctuation, get_translation_with_punctuation
+
+
+def generate_translations_test():    
+    english_sentences = get_english_sentences()
+    google_translation = get_google_translations()
+    
+    random_index = random.sample(range(1, 3888), 10)
+
+    for index in random_index:
+        source_sentence = get_sentence_with_punctuation(english_sentences[index])
+        translation_google = get_translation_with_punctuation(google_translation[index])
+        translation = generate_translations_for_score(source_sentence, translation_google)
+        
+        name_file = './data_score/wino/model-teste.txt'
+        with open(name_file, 'a') as gen_file:
+            gen_file.write("==> index    "+str(index)+"  ====>\n")
+            gen_file.write(json.dumps(translation))
+            gen_file.write("\n") 
+
 def generate_translations_wino():    
     english_sentences = get_english_sentences()
     google_translation = get_google_translations()
     translations = []
     
-    start = 1355
+    start = 0
     end = 3888
 
     for index in range(start, end):
         source_sentence = get_sentence_with_punctuation(english_sentences[index])
         translation_google = get_translation_with_punctuation(google_translation[index])
-        translation = generate_translation_for_poj(source_sentence, translation_google)
+        translation = generate_translations_for_score(source_sentence, translation_google)
         translations.append(translation)
         
-        name_file = './data_score/wino/model-en-pt-wino.txt'
+        name_file = './data_score/wino/model-teste.txt'
         with open(name_file, 'a') as gen_file:
             gen_file.write(translation)
             gen_file.write("\n") 
@@ -40,7 +54,7 @@ def generate_translations_bleu():
     english_sentences = get_english_sentences_bleu()
     google_translation = get_google_translations()
     translations = []
-    start = 1166
+    start = 0
     end = 1200
     
     for index in range(start, end):
@@ -51,13 +65,8 @@ def generate_translations_bleu():
             source_sentence = get_sentence_with_punctuation(sentence)
             translation_google = get_translation_with_punctuation(sent_trans[ind])
             
-            print("===== SOURCE =====>", source_sentence)
-            print("===== GOOGLE =====>", translation_google)
-            print("-----------------------")
             translation = generate_translations_for_score(source_sentence, translation_google)
             translations += translation + " "
-            print(":::::::::TRANSLATION WINO:::::::::::::::", translation)
-            print("-----------------------")
 
         name_file = './data_score/model-en-pt-ted.txt'
         with open(name_file, 'a') as gen_file:
@@ -113,155 +122,6 @@ def get_english_sentences_bleu():
 
     return english_sentences
 
-
-def generate_translation_for_poj(source_sentence, google_translation):
-    translation_nlp = google_translation
-    people = get_align_people(source_sentence, translation_nlp)
-    translation_model = generate_translation(source_sentence)
-
-    source_nlp = get_nlp_en(source_sentence)
-    translation_model_nlp = get_nlp_pt(translation_model)
-    people_model = get_align_people(source_nlp, translation_model_nlp)
-
-    pronouns = get_pronoun_on_sentence(source_sentence)
-    subjects = []
-    for pronoun in pronouns:
-        subject = get_disambiguate_pronoun(source_sentence, pronoun)
-        subjects.append(subject)
-
-    sub_split = subjects[0].split()[-1]
-    source_people = get_people_source(source_sentence)
-    people_to_neutral_source = [person.text for person in source_people if person.text != sub_split]
-    alignment_model = get_word_alignment_pairs(source_sentence.text, translation_model_nlp.text, model="bert", matching_methods = "i", align = "itermax")
-    people_model = ""
-    people_control_model = ''
-    
-    for first_sentence, second_sentence in alignment_model:
-        if first_sentence in people_to_neutral_source:
-            people_control_model = second_sentence
-        if first_sentence == sub_split:
-            people_model = second_sentence
-
-    people_to_neutral= []
-
-    alignment = get_word_alignment_pairs(source_sentence.text, translation_nlp.text, model="bert", matching_methods = "i", align = "itermax")
-    people_google = ""
-
-    for first_sentence, second_sentence in alignment:
-      if first_sentence in people_to_neutral_source:
-        people_to_neutral.append(second_sentence)
-      elif first_sentence == sub_split:
-          people_google = second_sentence
-
-    people_model_nlp = get_nlp_pt(people_model)
-    people_google_nlp = get_nlp_pt(people_google)
-
-    model_morph = get_morph(people_model_nlp)
-    model_google = get_morph(people_google_nlp)
-
-    gender_people_model = get_sentence_gender(people_model_nlp)
-
-    if (people_google == None or len(people_google) == 0) and len(people_model_nlp) > 0:
-        translation_nlp = translation_model_nlp
-    elif len(gender_people_model) > 0 and model_morph != model_google: 
-        constrained_splitted = split_on_subj_and_bsubj(translation_nlp, people)
-        translations = []
-
-        for constrained in constrained_splitted:
-            constrained_translation = generate_translation_with_gender_constrained(source_sentence.text_with_ws, constrained)
-            translation = check_constrained_translation(constrained, constrained_translation, source_sentence.text_with_ws)
-
-            translations.append(translation)
-
-        if len(translations) == 1:
-            translations_aligned = translations[0]
-        elif len(translations) == 2:
-            translations_aligned = combine_contrained_translations(translations, constrained_splitted, source_sentence)
-        elif len(translations) > 2:
-            translation = ""
-            trans_aligned = ""
-            for index, translation in enumerate(translations):
-                if index == 0:
-                    trans_aligned = translations[0]
-                elif index < len(translations)-1:
-                    next_trans = translations[index+1]
-                    trans = [trans_aligned, next_trans]
-                    trans_aligned = combine_contrained_translations(trans, constrained_splitted, source_sentence)
-                else:
-                    translation = combine_contrained_translations([trans_aligned, translations[-1]], constrained_splitted, source_sentence)
-                    translations_aligned =  translation
-
-        alignment_with_constrained = get_word_alignment_pairs(source_sentence.text, translations_aligned, model="bert", matching_methods = "i", align = "itermax")
-        sub_split = subjects[0].split()
-        subj_translated = ""
-
-        for first_sentence, second_sentence in alignment_with_constrained: 
-            if first_sentence in sub_split:
-                subj_translated += second_sentence + " "
-
-        alignment_with_translation = get_word_alignment_pairs(translation_nlp.text, translations_aligned, model="bert", matching_methods = "i", align = "itermax")
-
-        translated = ""
-        subj_translated_split = subj_translated.split()
-        for first_sentence, second_sentence in alignment_with_translation: 
-            last_word = translated.strip().split(" ")[-1]
-            if second_sentence in subj_translated_split and second_sentence != last_word and second_sentence not in translated:
-                translated += second_sentence + " "
-            elif first_sentence[:-1] != last_word[:-1] or len(translated) == 0:
-                translated += first_sentence + " "
-
-        translation_nlp = get_nlp_pt(translated)
-
-    elif people_model == people_google:
-        head_google = [token for token in translation_nlp if token.head.text == people_google]
-        head_model = [token for token in translation_model_nlp if token.head.text == people_model]
-
-        gender_head_google = [token.morph.get("Gender").pop() for token in head_google if len(token.morph.get("Gender")) > 0]
-        gender_head_model = [token.morph.get("Gender").pop() for token in head_model if len(token.morph.get("Gender")) > 0]
-
-        if(set(gender_head_google) != set(gender_head_model)):
-            lemmas_google = [token.lemma_ for token in head_google]
-            lemmas_model = [token.lemma_ for token in head_model]
-
-            if lemmas_google == lemmas_model:
-                google_index = [token.i for token in head_google]
-                new_translation = ""
-
-                for token in translation_nlp:
-                    for ind in google_index:
-                        if token.i == ind:
-                            new_translation += head_model.pop(0).text_with_ws
-                        else:
-                            new_translation += token.text_with_ws
-
-                translation_nlp = get_nlp_pt(new_translation)
-
-    words_to_neutral = []
-    index_to_replace = []
-    for index, token in enumerate(translation_nlp):
-            # print(token, "->", token.lemma_,"->", token.head,"->", token.head.lemma_)
-            if token.head.text in people_to_neutral or token.head.text[:-1] in people_to_neutral or token.head.lemma_ in people_to_neutral or token.text in people_to_neutral or token.text[:-1] in people_to_neutral or token.lemma_ in people_to_neutral :
-                words_to_neutral.append(token)
-                index_to_replace.append(index)
-
-    inflections = get_just_possible_words(words_to_neutral)
-    first_sentence, second_sentence, third_sentence  = format_translations_subjs(index_to_replace, translation_nlp, inflections)
-    translation = format_translations_subjs(index_to_replace, translation_nlp, inflections)
-    
-    print(first_sentence)
-    print(second_sentence)
-    print(third_sentence)
-    
-    sent = [sentence for sentence in translation if people_control_model in sentence]
-
-    if first_sentence == sent:
-        return first_sentence.replace(".", "").strip() + "."
-    elif second_sentence == sent:
-        return second_sentence.replace(".", "").strip() + "."
-
-    return first_sentence.replace(".", "").strip() + "."
-
-
 if __name__ == "__main__":
     # Parse command line arguments
     args = docopt(__doc__)
@@ -272,7 +132,7 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.INFO)
 
-    translation = generate_translations_wino()
+    translation = generate_translations_test()
     print(translation)
 
     logging.info("DONE")

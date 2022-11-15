@@ -1,5 +1,12 @@
 from spacy_utils import get_nlp_en
 
+def format_question(source_sentence):
+    token = source_sentence.split()[0]
+    if token.lower() == "did":
+        return source_sentence[1:]
+    
+    return source_sentence
+
 def format_sentence(sentence):
     new_sentence = ""
     for token in sentence:
