@@ -105,7 +105,34 @@ def get_just_possible_words(translation):
     forms_list = []
     for word in translation:
         print("word --->", word, word.pos_, word.dep_, word.head)
-        if word.pos_ == "CCONJ" or word.pos_ == "PUNCT" or word.pos_ == "VERB" or word.head.dep_ == 'obj':
+        if word.pos_ == "CCONJ" or word.pos_ == "PUNCT":
+            forms_list.append([word.text, word.text, word.text])
+        else:
+            inflections = get_gender_inflections(word)
+            forms = []
+            if inflections == "No matches":   
+                forms.append(word.text)
+                forms.append(word.text)
+                forms.append(word.text)
+            else:    
+                forms.append(inflections['word'])
+
+                for inflection in inflections['forms']:
+                    forms.append(inflection['form'])
+                
+                if len(inflections['forms']) == 0: 
+                    forms.append(inflections['word'])
+                    forms.append(inflections['word'])
+
+            forms_list.append(forms)
+    
+    return forms_list
+
+def get_just_possible_words_sentence(translation):
+    forms_list = []
+    for word in translation:
+        print("word --->", word, "->", word.pos_, "->", word.dep_,  "->", word.head)
+        if word.pos_ == "CCONJ" or word.pos_ == "PUNCT" or word.head.dep_ == 'obj':
             forms_list.append([word.text, word.text, word.text])
         else:
             inflections = get_gender_inflections(word)

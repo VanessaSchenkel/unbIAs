@@ -1,0 +1,20 @@
+==> index    2549  ====>
+{"first_option": "O balconista odiava o vendedor e o sabotava.", "second_option": "A balconista odiava o vendedor e o sabotava.", "neutral": "[x] balconista odiava o vendedor e o sabotava."}
+==> index    499  ====>
+{"first_option": "O m\u00e9dico quis conhecer o conselheiro porque ele tem mais experi\u00eancia em acidentes m\u00e9dicos.", "second_option": "A m\u00e9dica quis conhecer o conselheiro porque ele tem mais experi\u00eancia em acidentes m\u00e9dicas.", "neutral": "[x] m\u00e9dic[x] quis conhecer o conselheiro porque ele tem mais experi\u00eancia em acidentes m\u00e9dic[x]s."}
+==> index    2971  ====>
+{"first_option": "O guarda visitou a cabeleireiro e agradeceu ", "second_option": "A guarda visitou a cabeleireiro e agradeceu ", "neutral": "[x] guarda visitou a cabeleireiro e agradeceu "}
+==> index    3011  ====>
+{"first_option": "O funcion\u00e1rio fez algumas perguntas ao analista e o mandou embora.", "second_option": "A funcion\u00e1ria fez algumas perguntas ao analista e o mandou embora.", "neutral": "[x] funcion\u00e1ri[x] fez algumas perguntas ao analista e o mandou embora."}
+==> index    2988  ====>
+{"first_option": "O cabeleireiro odeia o mec\u00e2nica depois que ele se recusou a ajudar a consertar o carro ", "second_option": "A cabeleireira odeia o mec\u00e2nica depois que ele se recusou a ajudar a consertar o carro ", "neutral": "[x] cabeleireir[x] odeia o mec\u00e2nica depois que ele se recusou a ajudar a consertar o carro "}
+==> index    3511  ====>
+{"first_option": "O patologista obteve amostras de tecido da v\u00edtima para determinar a causa de sua morte.", "second_option": "A patologista obteve amostras de tecido da v\u00edtima para determinar a causa de sua morte.", "neutral": "[x] patologista obteve amostras de tecido da v\u00edtima para determinar a causa de sua morte."}
+==> index    3695  ====>
+{"first_option": "first_option", "second_option": "second_option", "neutral": "neutral"}
+==> index    1912  ====>
+{"first_option": "O gerente exigiu ser atendido pela enfermeira porque estava passando mal.", "second_option": "O gerente exigiu ser atendido pela enfermeiro porque estava passando mal.", "neutral": "O gerente exigiu ser atendido pela enfermeir[x] porque estava passando mal."}
+==> index    66  ====>
+{"translation": "O recepcionista acolheu o advogado, pois este \u00e9 parte do seu trabalho, e o rece.", "neutral": "[x] recepcionista acolheu [x] advogad[x], pois isto \u00e9 parte d[x] seu trabalho, e o rece."}
+==> index    1375  ====>
+{"first_option": "O vendedor conversou com o recepcionista e o convenceu a comprar o seguro.", "second_option": "A vendedora conversou com o recepcionista e o convenceu a comprar o seguro.", "neutral": "[x] vendedor conversou com o recepcionista e o convenceu a comprar o seguro."}

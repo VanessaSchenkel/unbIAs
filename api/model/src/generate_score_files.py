@@ -24,7 +24,7 @@ def generate_translations_test_wino():
         translation_google = get_translation_with_punctuation(google_translation[index])
         translation = generate_translations(source_sentence, translation_google)
         
-        name_file = './data_score/wino/model-teste.txt'
+        name_file = './data_score/wino/model-teste-1.txt'
         with open(name_file, 'a') as gen_file:
             gen_file.write("==> index    "+str(index)+"  ====>\n")
             gen_file.write(json.dumps(translation))

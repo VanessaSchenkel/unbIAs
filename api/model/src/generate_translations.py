@@ -13,7 +13,7 @@ import more_itertools
 from spacy_utils import get_morph, get_people_source, get_pronoun_on_sentence, get_pronoun_on_sentence_with_it, get_sentence_with_punctuation_text, get_translation_with_punctuation, is_plural, \
     get_only_subject_sentence, get_people, get_nlp_en, get_sentence_gender, get_nsubj_sentence, get_nlp_pt, get_noun_chunks
 from generate_model_translation import generate_translation_with_constraints, generate_translation
-from gender_inflection import get_just_possible_words, format_sentence_inflections
+from gender_inflection import get_just_possible_words, format_sentence_inflections, get_just_possible_words_sentence
 from constrained_beam_search import get_constrained_subject_and_neutral, get_constraints_one_subj, get_constrained_translation, get_constraints_without_people, \
     get_translation_constrained_and_aligned_different_gender, get_translation_constrained_and_aligned_same_gender, get_translations_aligned, get_word_to_add
 from roberta import get_disambiguate_pronoun, get_roberta_subject
@@ -182,7 +182,7 @@ def generate_translation_for_sentence_without_pronoun_and_gender(source_sentence
     translation = generate_translation(source_sentence.text_with_ws)
     translation_nlp = get_translation_with_punctuation(translation)
 
-    possible_words = get_just_possible_words(translation_nlp)
+    possible_words = get_just_possible_words_sentence(translation_nlp)
     (first_option, second_option, neutral) = format_sentence_inflections(possible_words)
 
     return {'first_option': first_option,'second_option': second_option, 'neutral': neutral}
@@ -197,7 +197,7 @@ def generate_translation_with_subject_and_neutral(source_sentence, google_transl
     constraints = get_constrained_subject_and_neutral(google_translation)
 
     translation = get_translations_aligned_model_google(google_translation, translation_model, constraints)
-    possible_words = get_just_possible_words(translation)
+    possible_words = get_just_possible_words_sentence(translation)
     (first_option, second_option, neutral) = format_sentence_inflections(possible_words)
 
     return {'first_option': first_option, 'second_option': second_option, 'neutral': neutral}
@@ -313,7 +313,7 @@ def generate_translation_without_people(source_sentence, google_translation):
 
     translation_nlp = get_translation_with_punctuation(translations_aligned_model.text)
 
-    possible_words = get_just_possible_words(translation_nlp)
+    possible_words = get_just_possible_words_sentence(translation_nlp)
     (first_sentence, second_sentence, third_sentence) = format_sentence_inflections(possible_words)
 
     return {'first_option': first_sentence, 'second_option': second_sentence, 'neutral': third_sentence}

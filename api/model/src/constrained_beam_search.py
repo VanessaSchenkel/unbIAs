@@ -1,10 +1,8 @@
-from format_translations import format_translations_subjs
+# Local imports
 from split_sentence import split_on_subj_and_bsubj
 from word_alignment import get_word_alignment_pairs
-from gender_inflection import get_just_possible_words
 from generate_model_translation import generate_translation, generate_translation_with_gender_constrained, get_best_translation
-from roberta import get_disambiguate_pronoun
-from spacy_utils import get_nlp_en, get_people_source, get_pronoun_on_sentence, get_nlp_pt, get_translation_with_punctuation
+from spacy_utils import get_nlp_en,  get_nlp_pt, get_translation_with_punctuation
 
 def get_translation_constrained_and_aligned_different_gender(translation_nlp, people, source_sentence, subjects):
         constrained_splitted = split_on_subj_and_bsubj(translation_nlp, people)

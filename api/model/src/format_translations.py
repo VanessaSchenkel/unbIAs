@@ -1,3 +1,4 @@
+# Local imports
 from gender_inflection import get_just_possible_words
 from spacy_utils import get_nlp_en
 

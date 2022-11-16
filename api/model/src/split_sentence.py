@@ -1,4 +1,7 @@
+# External imports
 import re
+
+# Local imports
 from spacy_utils import get_nlp_en
 
 def split_on_punctuation(sentence):

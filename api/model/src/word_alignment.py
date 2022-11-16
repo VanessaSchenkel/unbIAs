@@ -6,7 +6,8 @@ import logging
 from docopt import docopt
 from simalign import SentenceAligner
 
-from spacy_utils import get_nlp_pt, get_people_source, get_translation_with_punctuation
+# Local imports
+from spacy_utils import get_people_source, get_translation_with_punctuation
 
 #matching-methods = "m: Max Weight Matching (mwmf), a: argmax (inter), i: itermax, f: forward (fwd), r: reverse (rev)"
 def initialize(first_sentence, second_sentence, model, matching_methods, align):
