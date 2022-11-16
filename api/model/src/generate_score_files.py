@@ -13,7 +13,7 @@ from generate_translations import generate_translations
 from spacy_utils import get_sentence_with_punctuation, get_translation_with_punctuation
 from split_sentence import split_on_punctuation
 
-def generate_translations_test():    
+def generate_translations_test_wino():    
     english_sentences = get_english_sentences()
     google_translation = get_google_translations()
     
@@ -29,6 +29,23 @@ def generate_translations_test():
             gen_file.write("==> index    "+str(index)+"  ====>\n")
             gen_file.write(json.dumps(translation))
             gen_file.write("\n") 
+            
+def generate_translations_test_bleu():    
+    english_sentences = get_english_sentences_bleu()
+    google_translation = get_google_translations_bleu()
+    
+    random_index = random.sample(range(0, 1200), 20)
+
+    for index in random_index:
+        source_sentence = get_sentence_with_punctuation(english_sentences[index])
+        translation_google = get_translation_with_punctuation(google_translation[index])
+        translation = generate_translations(source_sentence, translation_google)
+        
+        name_file = './data_score/model-teste-bleu.txt'
+        with open(name_file, 'a') as gen_file:
+            gen_file.write("==> index    "+str(index)+"  ====>\n")
+            gen_file.write(json.dumps(translation))
+            gen_file.write("\n")             
 
 def generate_translations_wino():    
     english_sentences = get_english_sentences()
@@ -41,7 +58,7 @@ def generate_translations_wino():
     for index in range(start, end):
         source_sentence = get_sentence_with_punctuation(english_sentences[index])
         translation_google = get_translation_with_punctuation(google_translation[index])
-        translation = generate_translations_for_score(source_sentence, translation_google)
+        translation = generate_translations(source_sentence, translation_google)
         translations.append(translation)
         
         name_file = './data_score/wino/model-teste.txt'
@@ -65,7 +82,7 @@ def generate_translations_bleu():
             source_sentence = get_sentence_with_punctuation(sentence)
             translation_google = get_translation_with_punctuation(sent_trans[ind])
             
-            translation = generate_translations_for_score(source_sentence, translation_google)
+            translation = generate_translations(source_sentence, translation_google)
             translations += translation + " "
 
         name_file = './data_score/model-en-pt-ted.txt'
@@ -90,6 +107,15 @@ def get_english_sentences():
         for line in sentences:
             sp = line.split("\t")
             english_sentences.append(sp[2])
+
+    return english_sentences
+
+def get_google_translations_bleu():
+    english_sentences = []
+
+    with open('./data_score/pt-ted-google.txt') as sentences: 
+        for line in sentences:
+            english_sentences.append(line.strip())
 
     return english_sentences
 
@@ -132,7 +158,7 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.INFO)
 
-    translation = generate_translations_test()
+    translation = generate_translations_test_bleu()
     print(translation)
 
     logging.info("DONE")

@@ -57,6 +57,7 @@ def get_translations_aligned_model_google(translation_google, translations_align
         alignment_with_translation = get_word_alignment_pairs(translation_google.text, translations_aligned, model="bert", matching_methods = "i", align = "itermax")
         translated = ""
         subj_translated_split = subj_translated.split()
+        
         for first_sentence, second_sentence in alignment_with_translation: 
             last_word = translated.strip().split(" ")[-1]
             if second_sentence in subj_translated_split and second_sentence != last_word and second_sentence not in translated:

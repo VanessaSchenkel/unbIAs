@@ -104,7 +104,8 @@ def format_sentence_inflections(possible_words):
 def get_just_possible_words(translation):
     forms_list = []
     for word in translation:
-        if word.pos_ == "CCONJ" or word.pos_ == "PUNCT" or word.pos_ == "VERB":
+        print("word --->", word, word.pos_, word.dep_, word.head)
+        if word.pos_ == "CCONJ" or word.pos_ == "PUNCT" or word.pos_ == "VERB" or word.head.dep_ == 'obj':
             forms_list.append([word.text, word.text, word.text])
         else:
             inflections = get_gender_inflections(word)

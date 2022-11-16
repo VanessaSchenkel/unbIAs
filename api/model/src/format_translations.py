@@ -69,8 +69,6 @@ def get_formatted_translations_nsubj_and_pobj_with_pronoun(translation_nlp, peop
     return more_likely, less_likely, neutral
 
 def format_translation(translation):
-    format_comma = translation.replace(" ,", ",")
-    format_dot = format_comma.replace(" .", ".")
-    format_semicolon = format_dot.replace(" ;", ";")
+    sentence = translation.replace(" ,", ",").replace(" .", ".").replace(" ;", ";").replace(" ?", "?")
     
-    return format_semicolon
+    return sentence

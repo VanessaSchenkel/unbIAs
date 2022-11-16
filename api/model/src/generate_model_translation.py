@@ -1,5 +1,5 @@
 """Usage:
-    generate_model_translation.py --sentence=SENTENCE [--constraints=CONTRAINED][--debug]
+    generate_model_translation.py --sentence=SENTENCE [--constraints=CONSTRAINTS][--debug]
 """
 
 # External imports

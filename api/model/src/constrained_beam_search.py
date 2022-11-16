@@ -6,7 +6,7 @@ from generate_model_translation import generate_translation, generate_translatio
 from roberta import get_disambiguate_pronoun
 from spacy_utils import get_nlp_en, get_people_source, get_pronoun_on_sentence, get_nlp_pt, get_translation_with_punctuation
 
-def get_translation_constrained_and_aligned_different_gender(translation_nlp, people, source_sentence, sub_split):
+def get_translation_constrained_and_aligned_different_gender(translation_nlp, people, source_sentence, subjects):
         constrained_splitted = split_on_subj_and_bsubj(translation_nlp, people)
         translations = []
 
@@ -35,7 +35,8 @@ def get_translation_constrained_and_aligned_different_gender(translation_nlp, pe
                     translations_aligned =  translation
 
         alignment_with_constrained = get_word_alignment_pairs(source_sentence.text, translations_aligned, model="bert", matching_methods = "i", align = "itermax")
-        # sub_split = subjects[0].split()
+        
+        sub_split = subjects[0].split()
         subj_translated = ""
 
         for first_sentence, second_sentence in alignment_with_constrained: 
@@ -72,13 +73,11 @@ def get_translation_constrained_and_aligned_same_gender(people_google, translati
                 google_index = [token.i for token in head_google]
                 new_translation = ""
 
-                for token in translation_nlp:
-                    for ind in google_index:
-                        if token.i == ind:
-                            new_translation += head_model.pop(0).text_with_ws
-                        else:
-                            new_translation += token.text_with_ws
+                translation_split = translation_nlp.text.split(" ")
+                for index, index_replace in enumerate(google_index):
+                    translation_split[index_replace] = head_model[index].text
 
+                new_translation = " ".join(translation_split)    
                 translation_nlp = get_nlp_pt(new_translation)
         
         return translation_nlp

@@ -9,7 +9,6 @@ from docopt import docopt
 # Local imports
 from spacy_utils import get_nlp_pt
 
-
 def make_neutral(sentence):
     sentence = get_nlp_pt(sentence)
     new_sentence = ""

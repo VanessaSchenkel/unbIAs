@@ -35,8 +35,7 @@ def get_roberta_subject(source_sentence):
         subject = get_disambiguate_pronoun(source_sentence, pronoun)
         subjects.append(subject)
 
-    sub_split = subjects[0].split()[-1]
-    return sub_split
+    return subjects
 
 # roBERTa has a bug, if is the pronoun is the start of the sentence, it crashes
 def check_if_is_first_in_sentence(new_source_sentence):

@@ -1,0 +1,40 @@
+==> index    1070  ====>
+{"first_option": "A sorte vem para quem a procura.", "second_option": "A sorte vem para quem a procura.", "neutral": "A sorte vem para quem a procura."}
+==> index    981  ====>
+{"translation": "Houve lavar-se at\u00e9 que o olho pudesse ver.", "neutral": "Houve lavar-se at\u00e9 que a olho pudesse ver."}
+==> index    511  ====>
+{"first_option": "Tu doente.", "second_option": "Tem que descansar.", "neutral": "Tu doente."}
+==> index    35  ====>
+{"first_option": "Tom enviou uma mensagem para Mary.", "second_option": "Tom enviou uma mensagem para Mary.", "neutral": "Tom enviou uma mensagem para Mary."}
+==> index    21  ====>
+{"translation": "Realmente n\u00e3o temos escolha.", "neutral": "Realmente n\u00e3o temos escolha."}
+==> index    320  ====>
+{"translation": "O que eu estou comendo?", "neutral": "O que eu estou comendo?"}
+==> index    1043  ====>
+{"translation": "N\u00f3s somos os melhores.", "neutral": "N\u00f3s somos [x]s melhores."}
+==> index    990  ====>
+{"first_option": "Eu fiz esta cadeira.", "second_option": "Eu fiz esta cadeira.", "neutral": "Eu fiz esta cadeira."}
+==> index    482  ====>
+{"first_option": "Visitei o t\u00famulo do meu pai.", "second_option": "Visitei o t\u00famulo da meu pai.", "neutral": "Visitei o t\u00famulo d[x] meu pai."}
+==> index    1012  ====>
+{"translation": "Est\u00e3o sempre reclamando.", "neutral": "Est\u00e3o sempre reclamando."}
+==> index    232  ====>
+{"translation": "N\u00e3o \u00e9 como quero que a sejamos seja.", "neutral": "N\u00e3o \u00e9 como quero que [x] sejamos seja."}
+==> index    171  ====>
+{"first_option": "Eu tive um bom sono.", "second_option": "Eu tive um bom sono.", "neutral": "Eu tive um bom sono."}
+==> index    240  ====>
+{"first_option": "N\u00e3o fique desapontado.", "second_option": "N\u00e3o fique desapontada.", "neutral": "N\u00e3o fique desapontad[x]."}
+==> index    759  ====>
+{"first_option": "Quando voc\u00ea voltou?", "second_option": "Quando voc\u00ea voltou?", "neutral": "Quando voc\u00ea voltou?"}
+==> index    970  ====>
+{"first_option": "Conhe\u00e7o um homem que fala latim.", "second_option": "Conhe\u00e7o um homem que fala latim.", "neutral": "Conhe\u00e7o um homem que fala latim."}
+==> index    1016  ====>
+{"first_option": "Se soub\u00e9ssemos o que est\u00e1vamos fazendo, n\u00e3o se chamaria pesquisa, n\u00e3o \u00e9?", "second_option": "Se soub\u00e9ssemos o que est\u00e1vamos fazendo, n\u00e3o se chamaria pesquisa, n\u00e3o \u00e9?", "neutral": "Se soub\u00e9ssemos o que est\u00e1vamos fazendo, n\u00e3o se chamaria pesquisa, n\u00e3o \u00e9?"}
+==> index    416  ====>
+{"translation": "Desde junho passado, eu n\u00e3o ouvi not\u00edcias dele.", "neutral": "Desde junho passad[x], eu n\u00e3o ouvi not\u00edcias dele."}
+==> index    767  ====>
+{"first_option": "Com que frequ\u00eancia Tom vem aqui?", "second_option": "Com que frequ\u00eancia Tom vem aqui?", "neutral": "Com que frequ\u00eancia Tom vem aqui?"}
+==> index    665  ====>
+{"first_option": "Estou em Hong Kong agora.", "second_option": "Estou em Hong Kong agora.", "neutral": "Estou em Hong Kong agora."}
+==> index    374  ====>
+{"first_option": "Voc\u00ea acabou ser baleado.", "second_option": "Voc\u00ea acabou ser baleado.", "neutral": "Voc\u00ea acabou ser baleado."}

@@ -131,6 +131,13 @@ def get_people_source(sentence):
     
     return people  
 
+def get_sentence_with_punctuation_text(sentence, punctuation = "."):
+    final = sentence[-1]
+    
+    if not final.is_punct or final.text == "\"" or final.text == " \"":
+        sentence += punctuation
+    
+    return sentence.text
           
 def get_translation_with_punctuation(sentence, punctuation = "."):
     final = get_nlp_pt(sentence)[-1]
