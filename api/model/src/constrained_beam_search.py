@@ -132,10 +132,7 @@ def combine_contrained_translations(translations, constrained_splitted, source_s
     punctuation = constrained_splitted[-1][-1]
     first, second = translations
     
-    first_sent = first.replace(".", "")
-    second_sent = second.replace(".", "")
-    
-    word_alignments = get_word_alignment_pairs(first_sent.strip(), second_sent.strip(), model=model, matching_methods=matching_methods, align=align)
+    word_alignments = get_word_alignment_pairs(first.strip(), second.strip(), model=model, matching_methods=matching_methods, align=align)
     new_sentence = ""
     for first_sentence, second_sentence in word_alignments:
         last_word = new_sentence.strip().split(" ")[-1]

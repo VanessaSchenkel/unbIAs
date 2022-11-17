@@ -15,47 +15,40 @@ export function Home() {
   const [shouldShowTranslation, setShouldShowTranslation] = useState(false);
   const [spinner, setSpinner] = useState(false);
   const [optionNeutral, setOptionNeutral] = useState({
-    value: "x",
-    label: "[X]",
+    value: "u",
+    label: "u",
   });
 
   const options = [
+    { value: "u", label: "u" },
     { value: "x", label: "[X]" },
     { value: "e", label: "e" },
-    { value: "u", label: "u" },
     { value: "at", label: "@" },
   ];
 
   const handleSendQuestion = (event) => {
     event.preventDefault();
-    // setSpinner(true);
+    setSpinner(true);
 
-    setNewTranslation({
-      first_option:
-        "O xerife questionou a caixa porque ela havia pegado o dinheiro.",
-      second_option:
-        "A xerife questionou a caixa porque ela havia pegado o dinheiro.",
-      neutral:
-        "[x] xerife questionou a caixa porque ela havia pegado o dinheiro.",
-    });
+    console.log(newTextToTranslate);
 
-    // if (newTextToTranslate.trim().length > 0) {
-    //   const requestOptions = {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({ source_sentence: newTextToTranslate }),
-    //   };
+    if (newTextToTranslate.trim().length > 0) {
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source_sentence: newTextToTranslate }),
+      };
 
-    //   fetch("/translate", requestOptions)
-    //     .then((response) => response.json())
-    //     .then((data) => setNewTranslation(data))
-    //     .then((data) => setSpinner(false))
-    //     .catch((err) => {
-    //       console.log(err);
-    //       setSpinner(false);
-    //       navigate("/error");
-    //     });
-    // }
+      fetch("/translate", requestOptions)
+        .then((response) => response.json())
+        .then((data) => setNewTranslation(data))
+        .then((data) => setSpinner(false))
+        .catch((err) => {
+          console.log(err);
+          setSpinner(false);
+          navigate("/error");
+        });
+    }
   };
 
   useEffect(() => {

@@ -9,10 +9,9 @@ from generate_translations import translate
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
 
-@app.route('/time')
-def get_current_time():
-    return {'time': time.time()}
-
+@app.route('/', methods=['GET'])
+def hello():
+    return jsonify("hello") 
 
 @app.route('/translate', methods=['POST'])
 def json_example():
@@ -26,4 +25,5 @@ def json_example():
         error = {"error": "An error occurred translating sentences :("}
         return jsonify(error)  
     
-    
+if __name__ == "__main__":
+    app.run(port=8000, debug=True)

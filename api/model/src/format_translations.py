@@ -78,7 +78,7 @@ def join_translations(translations):
     obj = {'first_sentence': '', 'second_sentence': '', 'neutral': ''}
 
     if len(translations) == 1:
-        return translations
+        return translations[0]
     
     for sentence in translations:
         if len(sentence) == 2:

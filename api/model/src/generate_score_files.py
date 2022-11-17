@@ -170,7 +170,7 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.INFO)
 
-    translation = generate_translations_test_bleu()
+    translation = generate_translations_test_wino()
     print(translation)
 
     logging.info("DONE")

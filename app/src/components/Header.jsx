@@ -15,22 +15,15 @@ export function Header() {
     navigate("/sobre");
   }
 
-  function handleClickGoContato() {
-    navigate("/contato");
-  }
-
   return (
     <div id='header'>
       <button onClick={handleClickGoHome} className='link-home'>
         <img src={logoImg} alt='Logo To bias' />
-        <h2>To bIAs</h2>
+        <h2>unbIAs</h2>
       </button>
       <div className='header-links'>
         <button onClick={handleClickGoSobre}>
           <h3>Sobre</h3>
-        </button>
-        <button onClick={handleClickGoContato}>
-          <h3>Contato</h3>
         </button>
       </div>
     </div>

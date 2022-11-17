@@ -28,17 +28,19 @@ def translate(source_sentence):
     Main method, receives source sentence, splits it on punctuation, generates it translations and 
     returns to the APP
     """
+    
     sent_english = split_on_punctuation(source_sentence)
     translations = []
     
     for sentence in sent_english:
         source_sentence = get_sentence_with_punctuation(sentence)
-        translation = get_google_translation(source_sentence)
+        translation = get_google_translation(source_sentence.text)
+        
         translation_google = get_translation_with_punctuation(translation)
             
         translation = generate_translations(source_sentence, translation_google)
         translations.append(translation)
-        
+    
     return join_translations(translations)
 
 
@@ -61,15 +63,8 @@ def generate_translations(source_sentence, google_translation):
         is_all_same_pronoun = is_all_equal(pronoun_list)
         is_all_same_subject = is_all_equal(subjects)
 
-        # print("subjects: ", subjects,  "pronoun_list: ", pronoun_list, "pronoun_list_it: ", pronoun_list_it, "gender: ", gender, "people_source: ", people_source)
-
-        # for token in source_sentence:
-        #     print("---->", token, " | ", token.pos_, " | ", token.tag_, " | ", token.dep_, " | ", token.head , " | ", token.morph)
-
         if is_all_same_pronoun and is_all_same_subject and len(pronoun_list_it) > 0 and len(subjects) > 0 and len(people_source) <= len(pronoun_list_it) and len(people_source) > 0:
-            print('-------> ENTROU 1', source_sentence)
             if is_neutral(pronoun_list, gender):
-                print('entrou neutro', source_sentence)
                 return generate_translation_for_one_subj_neutral(source_sentence, google_translation)
 
             return generate_translation_for_one_subj(source_sentence, google_translation)
@@ -78,32 +73,24 @@ def generate_translations(source_sentence, google_translation):
              return generate_translation_for_one_subj(source_sentence, google_translation)
         
         elif len(gender) == 0 and len(set(pronoun_list)) == 0 and len(subjects) == 0:
-            print('-------> ENTROU 2', source_sentence)
             return generate_translation_with_subject_and_neutral(source_sentence, google_translation)
-            # return generate_translation_for_sentence_without_pronoun_and_gender(source_sentence, google_translation)
         
         elif len(gender) == 0 and len(set(pronoun_list)) == 0 and len(subjects) > 0 or len(gender) == 1 and len(pronoun_list) == 1 and len(people_source) == 0:
-            print('-------> ENTROU 3', source_sentence)
             return generate_translation_with_subject_and_neutral(source_sentence, google_translation)
         
         elif len(set(pronoun_list)) == 1 and all('it' == elem.text for elem in pronoun_list_it):
-            print('-------> ENTROU 4', source_sentence)
             return generate_translation_it(source_sentence, google_translation)
         
         elif len(pronoun_list) > 0 and (len(people_source) > len(pronoun_list) or len(people_source) > len(gender) or len(gender) > 1 and 'Neut' in gender):
-            print('-------> ENTROU 5', source_sentence)
             return generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence, google_translation)
         
         elif len(subjects) == len(pronoun_list) and len(subjects) > 0 and len(gender) > 1:
-            print('-------> ENTROU 6', source_sentence)
             return generate_translation_more_subjects(source_sentence, subjects, google_translation, people_source)
         
         elif len(subjects) > len(pronoun_list) and (len(people_source) == 0 or len(pronoun_list_it) == 0):
-            print('-------> ENTROU 7', source_sentence)
             return generate_translation_without_people(source_sentence, google_translation)
         
         else:
-            print('-------> ENTROU ELSE', source_sentence)
             return generate_translation_for_nsubj_and_pobj_with_pronoun(source_sentence, google_translation)
     
     except:
