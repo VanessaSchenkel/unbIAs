@@ -104,7 +104,6 @@ def format_sentence_inflections(possible_words):
 def get_just_possible_words(translation):
     forms_list = []
     for word in translation:
-        print("word --->", word, word.pos_, word.dep_, word.head)
         if word.pos_ == "CCONJ" or word.pos_ == "PUNCT":
             forms_list.append([word.text, word.text, word.text])
         else:
@@ -131,7 +130,6 @@ def get_just_possible_words(translation):
 def get_just_possible_words_sentence(translation):
     forms_list = []
     for word in translation:
-        print("word --->", word, "->", word.pos_, "->", word.dep_,  "->", word.head)
         if word.pos_ == "CCONJ" or word.pos_ == "PUNCT" or word.head.dep_ == 'obj':
             forms_list.append([word.text, word.text, word.text])
         else:

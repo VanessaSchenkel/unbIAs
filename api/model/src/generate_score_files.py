@@ -13,7 +13,10 @@ from generate_translations import generate_translations
 from spacy_utils import get_sentence_with_punctuation, get_translation_with_punctuation
 from split_sentence import split_on_punctuation
 
-def generate_translations_test_wino():    
+def generate_translations_test_wino():
+    """
+    Creates a file with 10 translations of random sentences from WinoMT challenge set
+    """
     english_sentences = get_english_sentences()
     google_translation = get_google_translations()
     
@@ -30,7 +33,10 @@ def generate_translations_test_wino():
             gen_file.write(json.dumps(translation))
             gen_file.write("\n") 
             
-def generate_translations_test_bleu():    
+def generate_translations_test_bleu():
+    """
+    Creates a file with 10 translations of random sentences from TED Talks to check BLEU score
+    """
     english_sentences = get_english_sentences_bleu()
     google_translation = get_google_translations_bleu()
     
@@ -41,13 +47,16 @@ def generate_translations_test_bleu():
         translation_google = get_translation_with_punctuation(google_translation[index])
         translation = generate_translations(source_sentence, translation_google)
         
-        name_file = './data_score/model-teste-bleu.txt'
+        name_file = './data_score/model-teste-bleu-1.txt'
         with open(name_file, 'a') as gen_file:
             gen_file.write("==> index    "+str(index)+"  ====>\n")
             gen_file.write(json.dumps(translation))
             gen_file.write("\n")             
 
-def generate_translations_wino():    
+def generate_translations_wino():
+    """
+    Creates a file with 3888 translations of WinoMT challenge set
+    """
     english_sentences = get_english_sentences()
     google_translation = get_google_translations()
     translations = []
@@ -67,7 +76,10 @@ def generate_translations_wino():
             gen_file.write("\n") 
 
 
-def generate_translations_bleu():    
+def generate_translations_bleu(): 
+    """
+    Creates a file with 1200 translations of TED Talk for BLEU score
+    """   
     english_sentences = get_english_sentences_bleu()
     google_translation = get_google_translations()
     translations = []

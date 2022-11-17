@@ -19,11 +19,11 @@ def get_word_alignment_pairs(first_sentence, second_sentence, model="bert-base-u
     source_tokens, target_tokens = format_sentences(first_sentence, second_sentence)
     sent1 = []
     sent2 = []
-    # print("Possible Alignments From SimAlign")
-    # print("Word in Sent 1 -----> Word in Sent 2")
+    print("Possible Alignments From SimAlign")
+    print("Word in Sent 1 -----> Word in Sent 2")
     alignments = initialize(source_tokens, target_tokens, model, matching_methods, align)
     for item in alignments:
-    #  print(source_tokens[item[0]],"---------->", target_tokens[item[1]])
+     print(source_tokens[item[0]],"---------->", target_tokens[item[1]])
      sent1.append(source_tokens[item[0]])
      sent2.append(target_tokens[item[1]])
 

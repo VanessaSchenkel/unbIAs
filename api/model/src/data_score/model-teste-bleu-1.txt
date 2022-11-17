@@ -1,0 +1,42 @@
+==> index    910  ====>
+{"translation": "N\u00e3o sabemos sabe como us\u00e1-lo.", "neutral": "N\u00e3o sabemos sabe como us\u00e1-lo."}
+==> index    73  ====>
+{"first_option": "O cachorro de Tom \u00e9 um bom nadador.", "second_option": "A cachorra de Tom \u00e9 uma boa nadadora.", "neutral": "[x] cachorr[x] de Tom \u00e9 um[x] bom nadador."}
+==> index    1163  ====>
+{"first_option": "Meu professor me disse que eu deveria ter passado mais tempo preparando meu discurso.", "second_option": "Meu professor me disse que eu deveria ter passado mais tempo preparando meu discurso.", "neutral": "Meu professor me disse que eu deveria ter passado mais tempo preparando meu discurso."}
+==> index    1032  ====>
+{"first_option": "Abra o cap\u00f4.", "second_option": "Abra a cap\u00f4.", "neutral": "Abra [x] cap\u00f4."}
+==> index    502  ====>
+{"first_option": "Fiquei tr\u00eas anos em coma.", "second_option": "Fiquei tr\u00eas anos em coma.", "neutral": "Fiquei tr\u00eas anos em coma."}
+==> index    777  ====>
+{"translation": "Este \u00e9 realmente o seu carro?", "neutral": "Isto \u00e9 realmente [x] seu carro?"}
+==> index    618  ====>
+{"first_option": "O ninho caiu no ch\u00e3o.", "second_option": "A ninho caiu no ch\u00e3o.", "neutral": "[x] ninho caiu no ch\u00e3o."}
+==> index    470  ====>
+{"first_option": "Finalmente lavei o carro.", "second_option": "Finalmente lavei o carro.", "neutral": "Finalmente lavei o carro."}
+==> index    927  ====>
+{"first_option": "\u00c9 dif\u00edcil caminhar na areia.", "second_option": "\u00c9 dif\u00edcil caminhar na areia.", "neutral": "\u00c9 dif\u00edcil caminhar na areia."}
+==> index    1160  ====>
+{"translation": "Te por quem \u00e9.", "neutral": "Te por quem \u00e9."}
+==> index    240  ====>
+{"first_option": "N\u00e3o fique desapontado.", "second_option": "N\u00e3o fique desapontada.", "neutral": "N\u00e3o fique desapontad[x]."}
+==> index    963  ====>
+{"first_option": "Pergunto por que Tom n\u00e3o fez isso do que eu pedi isso.", "second_option": "Pergunto por que Tom n\u00e3o fez isso da que eu pedi isso.", "neutral": "Pergunto por que Tom n\u00e3o fez isso d[x] que eu pedi isso."}
+==> index    116  ====>
+{"first_option": "Como ousa falar de amor, voc\u00ea que nunca conheceu Lola?", "second_option": "Como ousa falar de amor, voc\u00ea que nunca conheceu Lola?", "neutral": "Como ousa falar de amor, voc\u00ea que nunca conheceu Lola?"}
+==> index    410  ====>
+{"translation": "Posso contar a ela?", "neutral": "Posso contar [x] ela?"}
+==> index    130  ====>
+{"translation": "Tom dormia muito mais tempo do que o que tinha planejado muito mais do que planejara.", "neutral": "Tom dormia muito mais tempo d[x] que o que tinha planejad[x] muito mais d[x] que planejara."}
+==> index    246  ====>
+{"first_option": "Acabei de almo\u00e7ar.", "second_option": "Acabei de almo\u00e7ar.", "neutral": "Acabei de almo\u00e7ar."}
+==> index    791  ====>
+{"first_option": "Eu vi um hipop\u00f3tamo no zool\u00f3gico.", "second_option": "Eu vi um hipop\u00f3tama no zool\u00f3gico.", "neutral": "Eu vi um hipop\u00f3tamo no zool\u00f3gico."}
+==> index    89  ====>
+{"translation": "Eu vou encontr\u00e1-los.", "neutral": "Eu vou encontr\u00e1-los."}
+==> index    19  ====>
+{"first_option": "Eu amo girass\u00f3is.", "second_option": "Eu amo girass\u00f3is.", "neutral": "Eu amo girass\u00f3is."}
+==> index    1051  ====>
+{"first_option": "Escreva seu nome e endere\u00e7o, por favor.", "second_option": "Escreva seu nome e endere\u00e7o, por favor.", "neutral": "Escreva seu nome e endere\u00e7o, por favor."}
+==> index    758  ====>
+{"first_option": "Tom deve engolir a p\u00edlula amarga.", "second_option": "Tom deve engolir a p\u00edlula amarga.", "neutral": "Tom deve engolir a p\u00edlula amarga."}

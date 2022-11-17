@@ -6,7 +6,6 @@
 # External imports
 import logging
 from docopt import docopt
-from spacy_utils import get_nlp_pt
 import six
 from google.cloud import translate_v2 as translate
 
@@ -28,12 +27,9 @@ def translate_text(text):
 
 def get_google_translation(source_sentence):
     translation = translate_text(source_sentence) 
-    translation = translation + '.' if not translation.endswith('.') else translation
     sentence_formatted = check_I(source_sentence, translation) 
-
-    sentence_nlp = get_nlp_pt(sentence_formatted)
    
-    return sentence_nlp
+    return sentence_formatted
 
 
 def check_I(source_sentence, translation):

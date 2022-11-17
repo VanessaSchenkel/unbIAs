@@ -101,7 +101,6 @@ def get_noun_chunks(sentence):
 def get_people(sentence):
     people = []
     for token in sentence:
-        # print(token, token.pos_, token.tag_, token.dep_, token.head)
         if (token.dep_ == "nsubj" and token.pos_ == "NOUN") or (token.dep_ == "pobj" and token.pos_ == "NOUN") or (token.dep_ == "obl" and token.pos_ == "NOUN") or (token.dep_ == "iobj" and token.pos_ == "NOUN") or token.text.lower() == "eu" or token.text.lower() == "você":
             people.append(token)
     
@@ -121,7 +120,6 @@ def get_people_source(sentence):
             next_token = doc[token.i + 1] 
         if not token.is_sent_start: 
             token_before = doc[token.i - 1]
-        # print(token, token.pos_, token.dep_, token_before.pos_, next_token.pos_)    
         if (token.pos_ == "NOUN") and (token.dep_ == "nsubj" and next_token.pos_ != "AUX" or (token.dep_ == "obl" and token.pos_ == "NOUN") or check_word(token_before, token, "dative", next_token) or check_word(token_before, token, "pobj", next_token) or check_word(token_before, token, "dobj", next_token)) and token.text != "present":
             people.append(token)
 

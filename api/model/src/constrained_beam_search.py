@@ -84,7 +84,6 @@ def get_constrained_subject_and_neutral(translation):
     constraints = ""
 
     for token in translation:
-        # print(token, token.dep_, token.pos_)
         if token.dep_ == 'ROOT':
             constraints = token.text  
 
@@ -133,7 +132,10 @@ def combine_contrained_translations(translations, constrained_splitted, source_s
     punctuation = constrained_splitted[-1][-1]
     first, second = translations
     
-    word_alignments = get_word_alignment_pairs(first.strip(), second.strip(), model=model, matching_methods=matching_methods, align=align)
+    first_sent = first.replace(".", "")
+    second_sent = second.replace(".", "")
+    
+    word_alignments = get_word_alignment_pairs(first_sent.strip(), second_sent.strip(), model=model, matching_methods=matching_methods, align=align)
     new_sentence = ""
     for first_sentence, second_sentence in word_alignments:
         last_word = new_sentence.strip().split(" ")[-1]
@@ -251,5 +253,4 @@ def get_translations_aligned(translations, constrained_splitted, source_sentence
                     translations_aligned =  translation
         
         translation = get_translation_with_punctuation(translations_aligned)
-        # print("----> translations_aligned translation", translation)            
         return translation        

@@ -73,3 +73,21 @@ def format_translation(translation):
     sentence = translation.replace(" ,", ",").replace(" .", ".").replace(" ;", ";").replace(" ?", "?")
     
     return sentence
+
+def join_translations(translations):
+    obj = {'first_sentence': '', 'second_sentence': '', 'neutral': ''}
+
+    if len(translations) == 1:
+        return translations
+    
+    for sentence in translations:
+        if len(sentence) == 2:
+            obj['first_sentence'] = obj['first_sentence'] + ' ' + sentence['translation']
+            obj['second_sentence'] = obj['second_sentence'] + ' ' + sentence['translation']
+            obj['neutral'] = obj['neutral'] + ' ' + sentence['neutral']
+        else:
+            obj['first_sentence'] = obj['first_sentence'] + ' ' + sentence['first_option']
+            obj['second_sentence'] = obj['second_sentence'] + ' ' + sentence['second_option']
+            obj['neutral'] = obj['neutral'] + ' ' + sentence['neutral']    
+    
+    return obj
