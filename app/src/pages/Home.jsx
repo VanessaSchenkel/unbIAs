@@ -30,8 +30,6 @@ export function Home() {
     event.preventDefault();
     setSpinner(true);
 
-    console.log(newTextToTranslate);
-
     if (newTextToTranslate.trim().length > 0) {
       const requestOptions = {
         method: "POST",
@@ -52,7 +50,6 @@ export function Home() {
   };
 
   useEffect(() => {
-    console.log("NEW TRANSLATION:", newTranslation);
     if (newTranslation) {
       const translation = newTranslation;
       if (translation.hasOwnProperty("error")) {
@@ -60,11 +57,9 @@ export function Home() {
         setShouldShowTranslation(false);
         setShouldShowPossibleWords(false);
       } else if (translation.hasOwnProperty("possible_words")) {
-        console.log("entrou possible words");
         setShouldShowTranslation(false);
         setShouldShowPossibleWords(true);
       } else {
-        console.log("entrou else");
         setShouldShowPossibleWords(false);
         setShouldShowTranslation(true);
       }

@@ -21,6 +21,7 @@ from split_sentence import split_on_punctuation, split_sentences_by_nsubj
 from format_translations import format_question, format_sentence, get_formatted_translations_nsubj_and_pobj_with_pronoun, join_translations, should_remove_first_word, should_remove_last_word
 from translation_google import get_google_translation
 from word_alignment import get_align_people, get_people_google_people_to_neutral, get_people_model_people_control_model, get_translations_aligned_model_google
+from generate_neutral import make_neutral
 
 
 def translate(source_sentence):
@@ -66,7 +67,6 @@ def generate_translations(source_sentence, google_translation):
         if is_all_same_pronoun and is_all_same_subject and len(pronoun_list_it) > 0 and len(subjects) > 0 and len(people_source) <= len(pronoun_list_it) and len(people_source) > 0:
             if is_neutral(pronoun_list, gender):
                 return generate_translation_for_one_subj_neutral(source_sentence, google_translation)
-
             return generate_translation_for_one_subj(source_sentence, google_translation)
         
         elif len(pronoun_list) == 1 and len(people_source) == 0:
@@ -156,7 +156,7 @@ def generate_translation_for_one_subj_neutral(source_sentence, google_translatio
     
     translation_formatted = get_translation_with_punctuation(translation_formatted.text)
     possible_words = get_just_possible_words(translation)
-    (first_sentence, second_sentence, neutral) = format_sentence_inflections(possible_words)
+    first_sentence, second_sentence, neutral = format_sentence_inflections(possible_words)
 
     return {'first_option': first_sentence, 'second_option': second_sentence, 'neutral': neutral}
 
@@ -168,6 +168,11 @@ def generate_translation_for_one_subj(source_sentence, google_translation):
     """
     translation_google = google_translation
     subject = get_only_subject_sentence(translation_google)
+    pronoun_list = get_pronoun_on_sentence(source_sentence)
+    gender = get_sentence_gender(source_sentence)
+    
+    if is_neutral(pronoun_list, gender):
+            return generate_translation_for_one_subj_neutral(source_sentence, google_translation)
 
     constrained_splitted = get_constraints_one_subj(translation_google, [subject])
     if len(constrained_splitted) == 0:
@@ -181,7 +186,7 @@ def generate_translation_for_one_subj(source_sentence, google_translation):
     translation = get_translations_aligned(translations, constrained_splitted, source_sentence)
     
     possible_words = get_just_possible_words(translation)
-    (first_sentence, second_sentence, neutral) = format_sentence_inflections(possible_words)
+    first_sentence, second_sentence, neutral = format_sentence_inflections(possible_words)
 
 
     return {'translation': first_sentence, 'neutral': neutral}
@@ -327,7 +332,7 @@ def generate_translation_without_people(source_sentence, google_translation):
     translation_nlp = get_translation_with_punctuation(translations_aligned_model.text)
 
     possible_words = get_just_possible_words_sentence(translation_nlp)
-    (first_sentence, second_sentence, neutral) = format_sentence_inflections(possible_words)
+    first_sentence, second_sentence, neutral = format_sentence_inflections(possible_words)
 
     return {'first_option': first_sentence, 'second_option': second_sentence, 'neutral': neutral}
 
@@ -343,7 +348,7 @@ def generate_translation_more_subjects(source_sentence, subjects, google_transla
         translation = generate_translation(source_sentence)
         translation_nlp = get_nlp_pt(translation)
         possible_words = get_just_possible_words(translation_nlp)
-        (first_sentence, second_sentence, neutral) = format_sentence_inflections(possible_words)
+        first_sentence, second_sentence, neutral = format_sentence_inflections(possible_words)
 
         return {'first_option': first_sentence, 'second_option': second_sentence, 'neutral': neutral}
 
@@ -353,7 +358,6 @@ def generate_translation_more_subjects(source_sentence, subjects, google_transla
         splitted_list.append(split_sentences_by_nsubj(sent, subjects))
 
     collapsed = list(more_itertools.collapse(splitted_list))
-
     translations_more_likely = []
     translations_neutral = []
 
@@ -366,7 +370,10 @@ def generate_translation_more_subjects(source_sentence, subjects, google_transla
         if should_remove_first:
             sentence_to_translate = sentence.strip().split(' ', 1)[1]
             first_word = sentence.strip().split(' ', 1)[0]
-            word_to_add = get_word_to_add(first_word) + ' '
+            
+            first_split = get_word_to_add(first_word) + ' '
+            word_to_add = first_split.split(', ', 1)[0] + ' '
+            
         elif should_remove_last:
             sentence_to_translate = sentence.strip()[:-1]
             last_word = sentence.strip().split(' ', 1)[-1]
@@ -376,8 +383,8 @@ def generate_translation_more_subjects(source_sentence, subjects, google_transla
 
         sent = get_nlp_en(sentence_to_translate)
         translations = generate_translation_for_one_subj(sent, google_translation)
-        more_likely = word_to_add + translations + word_to_add_last
-        neutral = word_to_add + translations['neutral'] + word_to_add_last
+        more_likely = word_to_add + translations['translation'] + word_to_add_last
+        neutral = make_neutral(more_likely)
         translations_more_likely.append(more_likely)
         translations_neutral.append(neutral)
 
